@@ -1,5 +1,18 @@
 // main.js
 
+// main.js
+
+function getUserStatus(userId) {
+    fetch(`get_user_status.php?user_id=${userId}`)
+        .then(response => response.json())
+        .then(data => {
+            document.getElementById('status').innerText = data.status;
+            document.getElementById('waitingListPosition').innerText = data.waiting_list_position || "N/A";
+        })
+        .catch(error => console.error('Error fetching user status:', error));
+}
+
+
 // Simulate login with session role storage
 function login(email, password) {
     // For demo purposes, we assume certain emails for role identification
