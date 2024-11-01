@@ -3,75 +3,121 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Register - Strive High School Bus Registration</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <title>Strive High School - Home</title>
+    <link rel="stylesheet" href="assets/css/style.css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.1.3/css/bootstrap.min.css" rel="stylesheet">
 </head>
 <body>
     <!-- Navbar -->
-<nav class="navbar navbar-expand-lg navbar-light bg-light">
-    <div class="container">
-        <a class="navbar-brand" href="index.html">Strive High School</a>
-        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
-            <span class="navbar-toggler-icon"></span>
-        </button>
-        <div class="collapse navbar-collapse" id="navbarNav">
-            <ul class="navbar-nav ms-auto">
-                <li class="nav-item">
-                    <a class="nav-link" href="index.html">Home</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="login.html">Login</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="register.html">Register</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="dashboard/user-dashboard.html">User Dashboard</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="dashboard/admin-dashboard.html">Admin Dashboard</a>
-                </li>
-            </ul>
-        </div>
-    </div>
-</nav>
-
-    <div class="container mt-5">
-        <div class="row justify-content-center">
-            <div class="col-md-8">
-                <div class="card">
-                    <div class="card-header text-center">
-                        <h3>Register</h3>
-                    </div>
-                    <div class="card-body">
-                        <form id="registrationForm">
-                            <div class="mb-3">
-                                <label for="fullName" class="form-label">Full Name</label>
-                                <input type="text" class="form-control" id="fullName" required>
-                            </div>
-                            <div class="mb-3">
-                                <label for="email" class="form-label">Parent's Email</label>
-                                <input type="email" class="form-control" id="email" required>
-                            </div>
-                            <div class="mb-3">
-                                <label for="password" class="form-label">Password</label>
-                                <input type="password" class="form-control" id="password" required>
-                            </div>
-                            <div class="mb-3">
-                                <label for="grade" class="form-label">Grade</label>
-                                <input type="text" class="form-control" id="grade" required>
-                            </div>
-                            <div class="mb-3">
-                                <label for="route" class="form-label">Preferred Route</label>
-                                <input type="text" class="form-control" id="route" required>
-                            </div>
-                            <button type="submit" class="btn btn-primary w-100">Register</button>
-                        </form>
-                    </div>
-                </div>
+    <nav class="navbar navbar-expand-lg navbar-light">
+        <div class="container">
+            <a class="navbar-brand" href="index.html">Strive High School</a>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="index.html">Home</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="login.html">Login</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link active" href="register.html">Register</a>
+                    </li>
+                </ul>
             </div>
         </div>
+    </nav>
+   
+ <!-- Registration Form Container -->
+ <div class="container my-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <form onsubmit="event.preventDefault(); registerUser()">
+                <h2 class="text-center mb-4">Register for School Bus Service</h2>
+
+                <!-- Full Name Input -->
+                <div class="mb-3">
+                    <label for="fullName" class="form-label">Learner's Full Name</label>
+                    <input type="text" class="form-control" id="fullName" required>
+                </div>
+
+                <!-- Grade Input -->
+                <div class="mb-3">
+                    <label for="grade" class="form-label">Grade</label>
+                    <select class="form-select" id="grade" required>
+                        <option value="">Select Grade</option>
+                        <option value="1">Grade 1</option>
+                        <option value="2">Grade 2</option>
+                        <option value="3">Grade 3</option>
+                        <!-- Add more grade options as needed -->
+                    </select>
+                </div>
+
+                <!-- Route Input -->
+                <div class="mb-3">
+                    <label for="route" class="form-label">Preferred Route</label>
+                    <select class="form-select" id="route" required>
+                        <option value="">Select Route</option>
+                        <option value="Route A">Route A</option>
+                        <option value="Route B">Route B</option>
+                        <option value="Route C">Route C</option>
+                        <!-- Add more route options as needed -->
+                    </select>
+                </div>
+
+                <!-- Parent Email Input -->
+                <div class="mb-3">
+                    <label for="parentEmail" class="form-label">Parent/Guardian Email</label>
+                    <input type="email" class="form-control" id="parentEmail" required>
+                </div>
+
+                <!-- Password Input -->
+                <div class="mb-3">
+                    <label for="password" class="form-label">Password</label>
+                    <input type="password" class="form-control" id="password" required>
+                </div>
+
+                <!-- Confirm Password Input -->
+                <div class="mb-3">
+                    <label for="confirmPassword" class="form-label">Confirm Password</label>
+                    <input type="password" class="form-control" id="confirmPassword" required>
+                </div>
+
+                <!-- Submit Button -->
+                <button type="submit" class="btn btn-primary w-100">Register</button>
+            </form>
+        </div>
     </div>
-    <script src="assets/js/main.js"></script>
+</div>
+
+<!-- footer.html -->
+<footer class="footer mt-auto py-3">
+    <div class="container text-center">
+        <span>© 2024 Strive High School. All Rights Reserved.</span>
+        <span class="float-end"><a href="contact.html" class="text-white">Contact Us</a></span>
+    </div>
+</footer>
+
+
+<script>
+    function registerUser() {
+        const fullName = document.getElementById('fullName').value;
+        const grade = document.getElementById('grade').value;
+        const route = document.getElementById('route').value;
+        const parentEmail = document.getElementById('parentEmail').value;
+        const password = document.getElementById('password').value;
+        const confirmPassword = document.getElementById('confirmPassword').value;
+
+        // Add client-side validation or AJAX request for backend integration here
+        if (password === confirmPassword) {
+            alert("Registration successful!");
+            window.location.href = "login.html";
+        } else {
+            alert("Passwords do not match.");
+        }
+    }
+</script>
+
+
 </body>
 </html>

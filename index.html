@@ -3,71 +3,110 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Strive High School Bus Registration System</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link href="assets/css/style.css" rel="stylesheet">
+    <title>Strive High School - Home</title>
+    <link rel="stylesheet" href="assets/css/style.css">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.1.3/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        /* Make sure the page fills the entire screen */
+        body, html {
+            height: 100%;
+            margin: 0;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Navbar styling */
+        .navbar {
+            background-color: #f8f9fa;
+        }
+
+        /* Welcome Section Styling */
+        .welcome-section {
+            flex-grow: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background-image: url('assets/images/hero.jpg'); /* Background cover image */
+            background-size: cover;
+            background-position: center;
+            color: white;
+            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.8);
+            padding: 60px 15px;
+            text-align: center;
+        }
+
+        /* Typography styling */
+        h1 {
+            font-size: 3em;
+            font-weight: bold;
+            margin-bottom: 15px;
+        }
+        
+        p.lead {
+            font-size: 1.3em;
+            max-width: 600px;
+            margin: 0 auto 30px;
+            color: #ddd;
+        }
+
+        /* Button styling */
+        .btn-primary {
+            padding: 10px 20px;
+            font-size: 1.1em;
+            font-weight: bold;
+            border-radius: 8px;
+        }
+
+        /* Footer styling */
+        .footer {
+            background-color: #333;
+            color: #f8f9fa;
+            text-align: center;
+            padding: 15px;
+        }
+    </style>
 </head>
 <body>
-    <!-- Navigation Bar -->
-   <!-- Navbar -->
-<nav class="navbar navbar-expand-lg navbar-light bg-light">
-    <div class="container">
-        <a class="navbar-brand" href="index.html">Strive High School</a>
-        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
-            <span class="navbar-toggler-icon"></span>
-        </button>
-        <div class="collapse navbar-collapse" id="navbarNav">
-            <ul class="navbar-nav ms-auto">
-                <li class="nav-item">
-                    <a class="nav-link" href="index.html">Home</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="login.html">Login</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="register.html">Register</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="/dashboard/user-dashboard.html">User Dashboard</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="dashboard/admin-dashboard.html">Admin Dashboard</a>
-                </li>
-            </ul>
-        </div>
-    </div>
-</nav>
-
-
-    <!-- Hero Section -->
-    <section class="text-center py-5 bg-light">
+    <!-- Navbar -->
+    <nav class="navbar navbar-expand-lg navbar-light">
         <div class="container">
-            <h1 class="display-4">Welcome to Strive High School Bus Registration</h1>
-            <p class="lead">Convenient and secure registration for all learners, parents, and guardians.</p>
-            <a href="register.html" class="btn btn-primary btn-lg">Get Started</a>
+            <a class="navbar-brand" href="index.html">Strive High School</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item">
+                        <a class="nav-link active" href="index.html">Home</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="login.html">Login</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="register.html">Register</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Welcome Section -->
+    <section class="welcome-section">
+        <div class="container">
+            <h1>Welcome to Strive High School Bus Registration System</h1>
+            <p class="lead">Securely register your learner for convenient and safe school transportation.</p>
+            <a href="register.html" class="btn btn-primary mt-3">Get Started</a>
         </div>
     </section>
 
-    <!-- Main Section -->
-    <div class="container my-5">
-        <div class="row">
-            <div class="col-md-6">
-                <h3>About the Bus Registration System</h3>
-                <p>This system helps manage school bus registrations, providing parents, guardians, and learners with a smooth experience. Register to join the service or log in to check your enrollment status.</p>
-            </div>
-            <div class="col-md-6">
-                <img src="assets/images/school_bus.png" alt="School Bus" class="img-fluid">
-            </div>
-        </div>
-    </div>
-
     <!-- Footer -->
-    <footer class="text-center py-4 bg-light">
-        <p>&copy; 2023 Strive High School | Pretoria</p>
+    <footer class="footer">
+        <div class="container">
+            <span>© 2024 Strive High School. All Rights Reserved.</span>
+        </div>
     </footer>
 
-    <!-- Bootstrap JS -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="assets/js/main.js"></script>
+    <!-- Optional JavaScript for Bootstrap -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.1.3/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
