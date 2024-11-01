@@ -59,5 +59,17 @@
             </div>
         </div>
     </div>
+    <script>
+        // Redirect if user isn't logged in or doesn't match the role
+        const role = localStorage.getItem("role");
+        const loggedIn = localStorage.getItem("loggedIn");
+    
+        if (!loggedIn || (window.location.pathname.includes("admin-dashboard") && role !== "admin") ||
+            (window.location.pathname.includes("user-dashboard") && role !== "user")) {
+            window.location.href = "../index.html";
+        }
+    </script>
+    
+    <script src="assets/js/main.js"></script>
 </body>
 </html>
