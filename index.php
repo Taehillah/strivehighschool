@@ -1,3 +1,14 @@
+<?php
+session_start(); // Start session to manage login state
+
+// Set dynamic title
+$title = "Strive High School - Home";
+
+// Example: Set session variable for demonstration (remove in production)
+$_SESSION['loggedIn'] = $_SESSION['loggedIn'] ?? false;
+$_SESSION['role'] = $_SESSION['role'] ?? 'Guest'; // Role can be 'Admin', 'User', etc.
+?>
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -95,7 +106,7 @@
         <div class="container">
             <h1>Welcome to Strive High School Bus Registration System</h1>
             <p class="lead">Securely register your learner for convenient and safe school transportation.</p>
-            <a href="register.html" class="btn btn-primary mt-3">Get Started</a>
+            <a href="register.html" class="btn btn-primary mt-3">Enter</a>
         </div>
     </section>
 
