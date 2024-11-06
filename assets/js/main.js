@@ -47,33 +47,20 @@ function checkLogin() {
     }
 }
 
-// Update navigation links based on login status
-function updateNavbar() {
-    const loggedIn = localStorage.getItem("loggedIn");
-    const navbar = document.getElementById("navbarNav");
-
-    if (loggedIn) {
-        // Hide login/register links and show dashboard and logout
-        navbar.innerHTML = `
-            <li class="nav-item">
-                <a class="nav-link" href="dashboard/user-dashboard.html">Dashboard</a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link" href="#" onclick="logout()">Logout</a>
-            </li>
-        `;
-    } else {
-        // Show login/register links
-        navbar.innerHTML = `
-            <li class="nav-item">
-                <a class="nav-link" href="login.html">Login</a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link" href="register.html">Register</a>
-            </li>
-        `;
-    }
-}
 
 // Initialize navbar update on page load
 document.addEventListener("DOMContentLoaded", updateNavbar);
+
+document.addEventListener("DOMContentLoaded", updateNavbar);
+
+// Ensure toggleFields() and other functions only affect elements by ID
+function toggleFields() {
+    const role = document.getElementById('role').value;
+    const isAdmin = role === 'Admin';
+
+    // Only disable specified fields, ensuring no impact on CSS
+    const fieldsToToggle = [ 'grade', 'route'];
+    fieldsToToggle.forEach(id => {
+        document.getElementById(id).disabled = isAdmin;
+    });
+}
