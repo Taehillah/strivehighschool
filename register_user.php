@@ -1,5 +1,5 @@
 <?php
-require_once 'sql/db_connect.php'; 
+require_once 'db_connect.php'; 
 ?>
 
 <?php
