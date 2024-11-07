@@ -48,6 +48,7 @@ function checkLogin() {
 }
 
 
+
 // Initialize navbar update on page load
 document.addEventListener("DOMContentLoaded", updateNavbar);
 
@@ -63,4 +64,10 @@ function toggleFields() {
     fieldsToToggle.forEach(id => {
         document.getElementById(id).disabled = isAdmin;
     });
+}
+
+ // Toggle mobile menu visibility
+ function toggleMenu() {
+    const menu = document.getElementById('navbarMenu');
+    menu.classList.toggle('active');
 }

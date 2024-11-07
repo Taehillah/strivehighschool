@@ -1,4 +1,4 @@
-/* General body and layout styling for full screen */
+/* Base styling for all screens */
 html, body {
     height: 100%;
     margin: 0;
@@ -6,31 +6,19 @@ html, body {
     flex-direction: column;
 }
 
-/* Navbar styling */
 .navbar {
     background-color: #f8f9fa;
+    padding: 10px 20px;
 }
 
-/* Footer styling */
 .footer {
     background-color: #333;
     color: #f8f9fa;
     text-align: center;
     padding: 15px;
-    margin-top: auto; /* Ensures footer stays at the bottom */
+    margin-top: auto;
 }
 
-.footer a {
-    color: #f8f9fa;
-    text-decoration: none;
-}
-
-.footer a:hover {
-    color: #ccc;
-    text-decoration: underline;
-}
-
-/* Section styling to center content vertically and horizontally */
 .main-section {
     flex-grow: 1;
     display: flex;
@@ -38,4 +26,43 @@ html, body {
     justify-content: center;
     text-align: center;
     padding: 60px 15px;
+}
+
+/* Responsive adjustments for screens below 768px width */
+@media (max-width: 768px) {
+    .navbar {
+        padding: 10px;
+        text-align: center;
+    }
+
+    .main-section {
+        padding: 30px 10px;
+    }
+
+    /* Adjust footer for smaller screens */
+    .footer {
+        padding: 10px;
+    }
+
+    /* Example: Resize text for smaller screens */
+    h1, h2, h3, p {
+        font-size: 90%;
+    }
+}
+
+/* Further adjustments for very small screens below 480px */
+@media (max-width: 480px) {
+    .navbar {
+        font-size: 14px;
+    }
+
+    .main-section {
+        padding: 20px 5px;
+    }
+
+    /* Stack buttons vertically if they are side-by-side */
+    .button-group {
+        display: flex;
+        flex-direction: column;
+    }
 }
