@@ -1,7 +1,7 @@
 <?php
 // db_connect.php
 $host = 'strivehigh.database.windows.net';
-$db = 'struve_high';
+$db = 'strive';
 $user = 'Admin_43385508';
 $pass = 'Ishmael@12345';
 
