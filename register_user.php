@@ -1,4 +1,8 @@
 <?php
+require_once 'sql/db_connect.php'; 
+?>
+
+<?php
 // register_user.php
 include 'db_connect.php';
 

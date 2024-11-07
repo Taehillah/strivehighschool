@@ -1,3 +1,7 @@
+<?php
+require_once 'sql/db_connect.php'; 
+?>
+
 <!DOCTYPE html>
 <html lang="en">
     <head>
@@ -8,6 +12,7 @@
         <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.1.3/css/bootstrap.min.css" rel="stylesheet">
     </head>
 <body>
+    
     <nav class="navbar navbar-expand-lg navbar-light">
         <div class="container">
             <a class="navbar-brand" href="index.php">Strive High School</a>
