@@ -1,19 +1,5 @@
 <?php
-require_once 'db_connect.php';
-session_start();
-
-if (!isset($_SESSION['user_id'])) {
-    header("Location: login.php"); // Redirect if not logged in
-    exit;
-}
-
-$userId = $_SESSION['user_id'];
-$stmt = $conn->prepare("SELECT * FROM Users WHERE id = :id");
-$stmt->bindParam(':id', $userId);
-$stmt->execute();
-$user = $stmt->fetch(PDO::FETCH_ASSOC);
-
-echo "Welcome, " . htmlspecialchars($user['name']);
+require_once 'db_connect.php'; 
 ?>
 
 
