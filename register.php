@@ -108,14 +108,15 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                     <input type="number" class="form-control" id="grade" name="grade" required>
                 </div>
                 <div class="mb-3">
-                    <label for="route" class="form-label">Preferred Route</label>
-                    <select class="form-select" id="route" name="route" required>
-                        <option value="">Select Route</option>
-                        <option value="Route A">Route A</option>
-                        <option value="Route B">Route B</option>
-                        <option value="Route C">Route C</option>
-                    </select>
-                </div>
+    <label for="route" class="form-label">Preferred Route</label>
+    <select class="form-select" id="route" name="route" required>
+        <option value="">Select Route</option>
+        <option value="Rooihuiskraal">Rooihuiskraal</option>
+        <option value="Wierdapark">Wierdapark</option>
+        <option value="Centurion">Centurion</option>
+    </select>
+</div>
+
                 <div class="mb-3">
                     <label for="email" class="form-label">Email</label>
                     <input type="email" class="form-control" id="email" name="email" required>
