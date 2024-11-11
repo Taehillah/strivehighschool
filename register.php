@@ -1,17 +1,13 @@
 <?php
 session_start();
-$title = "Strive High School - Register";
-
-// Include database connection
 include 'db_connect.php';
 
-// Initialize variables for errors and success messages
-$successMessage = "";
+$title = "Strive High School - Register";
 $errorMessage = "";
+$successMessage = "";
 
 // Handle form submission
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
-    // Retrieve and sanitize form data
     $role = $_POST['role'];
     $fullName = htmlspecialchars(trim($_POST['fullName']));
     $grade = $_POST['grade'];
@@ -19,8 +15,15 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $email = filter_var($_POST['email'], FILTER_SANITIZE_EMAIL);
     $password = $_POST['password'];
 
-    // Additional validation: check if required fields are filled and email is valid
-    if (empty($role) || empty($fullName) || empty($grade) || empty($route) || empty($email) || empty($password)) {
+    // Check if the full name already exists in the database
+    $stmt = $pdo->prepare("SELECT COUNT(*) FROM Users WHERE full_name = :fullName");
+    $stmt->bindParam(':fullName', $fullName, PDO::PARAM_STR);
+    $stmt->execute();
+    $count = $stmt->fetchColumn();
+
+    if ($count > 0) {
+        $errorMessage = "A user with this full name is already registered.";
+    } elseif (empty($role) || empty($fullName) || empty($grade) || empty($route) || empty($email) || empty($password)) {
         $errorMessage = "All fields are required.";
     } elseif (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
         $errorMessage = "Invalid email format.";
@@ -32,8 +35,6 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             // Insert data into the Users table
             $stmt = $pdo->prepare("INSERT INTO Users (role, email, password, route, full_name, grade) 
                                    VALUES (:role, :email, :password, :route, :full_name, :grade)");
-
-            // Execute the query with bound parameters
             $stmt->execute([
                 ':role' => $role,
                 ':email' => $email,
@@ -50,6 +51,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     }
 }
 ?>
+
 
 <!DOCTYPE html>
 <html lang="en">
