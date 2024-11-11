@@ -9,8 +9,6 @@ if (!isset($_SESSION['loggedIn']) || $_SESSION['loggedIn'] !== true) {
 
 $userId = $_SESSION['userId'];
 $role = $_SESSION['role'];
-
-// Initialize variables to store user data
 $name_of_the_learner = '';
 $status = '';
 $waitingListPosition = '';
@@ -63,10 +61,13 @@ try {
     <link rel="stylesheet" href="assets/css/style.css">
 </head>
 <body>
-    <!-- Navbar -->
+    <!-- Navbar with Hamburger Menu -->
     <nav class="navbar navbar-expand-lg navbar-light bg-light">
         <div class="container">
             <a class="navbar-brand" href="index.php">Strive High School</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
             <div class="collapse navbar-collapse" id="navbarNav">
                 <ul class="navbar-nav ms-auto">
                     <li class="nav-item"><a class="nav-link" href="index.php">Home</a></li>
@@ -119,5 +120,8 @@ try {
             <span>© <?php echo date("Y"); ?> Strive High School. All rights reserved.</span>
         </div>
     </footer>
+
+    <!-- Bootstrap JS for hamburger functionality -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
