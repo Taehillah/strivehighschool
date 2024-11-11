@@ -27,7 +27,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                 $_SESSION['userId'] = $user['User_ID'];
                 $_SESSION['role'] = $user['role'];
 
-                echo "User authenticated, redirecting...";
+              //  echo "User authenticated, redirecting...";
 
                 if ($user['role'] == 'Admin') {
                     header("Location: dashboard/admin-dashboard.php");
