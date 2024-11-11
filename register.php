@@ -53,9 +53,6 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 }
 ?>
 
-
-
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -70,6 +67,9 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     <nav class="navbar navbar-expand-lg navbar-light bg-light">
         <div class="container">
             <a class="navbar-brand" href="index.php">Strive High School</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
             <div class="collapse navbar-collapse" id="navbarNav">
                 <ul class="navbar-nav ms-auto">
                     <li class="nav-item"><a class="nav-link" href="index.php">Home</a></li>
@@ -105,7 +105,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                     </select>
                 </div>
                 <div class="mb-3">
-                    <label for="fullName" class="form-label">Full Name of Learner or Administrator</label>
+                    <label for="fullName" class="form-label">Full Name</label>
                     <input type="text" class="form-control" id="fullName" name="fullName" required>
                 </div>
                 <div class="mb-3">
@@ -113,15 +113,14 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                     <input type="number" class="form-control" id="grade" name="grade" required>
                 </div>
                 <div class="mb-3">
-    <label for="route" class="form-label">Preferred Route</label>
-    <select class="form-select" id="route" name="route" required>
-        <option value="">Select Route</option>
-        <option value="Rooihuiskraal">Rooihuiskraal</option>
-        <option value="Wierdapark">Wierdapark</option>
-        <option value="Centurion">Centurion</option>
-    </select>
-</div>
-
+                    <label for="route" class="form-label">Preferred Route</label>
+                    <select class="form-select" id="route" name="route" required>
+                        <option value="">Select Route</option>
+                        <option value="Rooihuiskraal">Rooihuiskraal</option>
+                        <option value="Wierdapark">Wierdapark</option>
+                        <option value="Centurion">Centurion</option>
+                    </select>
+                </div>
                 <div class="mb-3">
                     <label for="email" class="form-label">Email</label>
                     <input type="email" class="form-control" id="email" name="email" required>
@@ -141,5 +140,8 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             <span>© <?php echo date("Y"); ?> Strive High School. All rights reserved.</span>
         </div>
     </footer>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
