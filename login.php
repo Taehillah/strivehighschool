@@ -1,12 +1,8 @@
 <?php
 session_start();
-error_reporting(E_ALL);
-ini_set('display_errors', 1);
-
-$title = "Strive High School - Login"; // Set page title
-
 include 'db_connect.php';
 
+$title = "Strive High School - Login";
 $errorMessage = "";
 
 // Handle form submission
@@ -18,21 +14,17 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         $errorMessage = "Please enter both email and password.";
     } else {
         try {
-            // Prepare the SQL statement
             $stmt = $pdo->prepare("SELECT * FROM Users WHERE email = :email");
-            $stmt->bindParam(':email', $email);
+            $stmt->bindParam(':email', $email, PDO::PARAM_STR);
             $stmt->execute();
 
-            // Fetch the user data
             $user = $stmt->fetch(PDO::FETCH_ASSOC);
 
             if ($user && password_verify($password, $user['password'])) {
-                // Set session variables
                 $_SESSION['loggedIn'] = true;
                 $_SESSION['userId'] = $user['User_ID'];
                 $_SESSION['role'] = $user['role'];
 
-                // Redirect based on role
                 if ($user['role'] == 'Admin') {
                     header("Location: admin-dashboard.php");
                 } else {
@@ -63,6 +55,9 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     <nav class="navbar navbar-expand-lg navbar-light bg-light">
         <div class="container">
             <a class="navbar-brand" href="index.php">Strive High School</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
             <div class="collapse navbar-collapse" id="navbarNav">
                 <ul class="navbar-nav ms-auto">
                     <li class="nav-item"><a class="nav-link" href="index.php">Home</a></li>
@@ -103,5 +98,8 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             <span>© <?php echo date("Y"); ?> Strive High School. All rights reserved.</span>
         </div>
     </footer>
+
+    <!-- Bootstrap JS for hamburger functionality -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
