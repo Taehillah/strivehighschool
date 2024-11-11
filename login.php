@@ -1,6 +1,9 @@
 <?php
 session_start();
 $title = "Strive High School - Login";
+echo "Processing login..."; // Add this for testing
+// Include database connection and other code
+
 
 // Include database connection
 include 'db_connect.php';
