@@ -100,7 +100,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                     </select>
                 </div>
                 <div class="mb-3">
-                    <label for="fullName" class="form-label">Full Name</label>
+                    <label for="fullName" class="form-label">Full Name of Learner or Administrator</label>
                     <input type="text" class="form-control" id="fullName" name="fullName" required>
                 </div>
                 <div class="mb-3">
