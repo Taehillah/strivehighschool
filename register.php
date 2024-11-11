@@ -15,14 +15,15 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $email = filter_var($_POST['email'], FILTER_SANITIZE_EMAIL);
     $password = $_POST['password'];
 
-    // Check if the full name already exists in the database
-    $stmt = $pdo->prepare("SELECT COUNT(*) FROM Users WHERE full_name = :fullName");
+    // Check if the combination of full name and grade already exists in the database
+    $stmt = $pdo->prepare("SELECT COUNT(*) FROM Users WHERE full_name = :fullName AND grade = :grade");
     $stmt->bindParam(':fullName', $fullName, PDO::PARAM_STR);
+    $stmt->bindParam(':grade', $grade, PDO::PARAM_INT);
     $stmt->execute();
     $count = $stmt->fetchColumn();
 
     if ($count > 0) {
-        $errorMessage = "A user with this full name is already registered.";
+        $errorMessage = "A user with this full name and grade is already registered.";
     } elseif (empty($role) || empty($fullName) || empty($grade) || empty($route) || empty($email) || empty($password)) {
         $errorMessage = "All fields are required.";
     } elseif (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
@@ -51,6 +52,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     }
 }
 ?>
+
 
 
 
