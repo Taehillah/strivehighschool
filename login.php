@@ -3,6 +3,8 @@ session_start();
 error_reporting(E_ALL);
 ini_set('display_errors', 1);
 
+$title = "Strive High School - Login"; // Set page title
+
 include 'db_connect.php';
 
 $errorMessage = "";
@@ -16,19 +18,21 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         $errorMessage = "Please enter both email and password.";
     } else {
         try {
+            // Prepare the SQL statement
             $stmt = $pdo->prepare("SELECT * FROM Users WHERE email = :email");
             $stmt->bindParam(':email', $email);
             $stmt->execute();
 
+            // Fetch the user data
             $user = $stmt->fetch(PDO::FETCH_ASSOC);
 
             if ($user && password_verify($password, $user['password'])) {
+                // Set session variables
                 $_SESSION['loggedIn'] = true;
                 $_SESSION['userId'] = $user['User_ID'];
                 $_SESSION['role'] = $user['role'];
 
-              //  echo "User authenticated, redirecting...";
-
+                // Redirect based on role
                 if ($user['role'] == 'Admin') {
                     header("Location: dashboard/admin-dashboard.php");
                 } else {
@@ -44,7 +48,6 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     }
 }
 ?>
-
 
 <!DOCTYPE html>
 <html lang="en">
