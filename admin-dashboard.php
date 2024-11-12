@@ -1,5 +1,20 @@
 <?php
-require_once 'db_connect.php'; 
+session_start();
+include 'db_connect.php';
+
+if (!isset($_SESSION['loggedIn']) || $_SESSION['role'] != 'Admin') {
+    header("Location: login.php");
+    exit();
+}
+
+// Fetch weekly summary data
+try {
+    $stmt = $pdo->prepare("SELECT Week_Start, Total_Registrations, New_Enrollments, Waiting_List_Additions, Bus_Serviceability FROM WeeklySummary ORDER BY Week_Start DESC");
+    $stmt->execute();
+    $weeklySummaries = $stmt->fetchAll(PDO::FETCH_ASSOC);
+} catch (PDOException $e) {
+    echo "Error: " . $e->getMessage();
+}
 ?>
 
 <!DOCTYPE html>
@@ -7,13 +22,13 @@ require_once 'db_connect.php';
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Admin Dashboard</title>
+    <title>Admin Dashboard - Weekly Activities</title>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet">
-    <link href="assets/css/style.css" rel="stylesheet">
+    <link rel="stylesheet" href="assets/css/style.css">
 </head>
 <body>
-    <!-- Navbar -->
-    <nav class="navbar navbar-expand-lg navbar-light">
+    <!-- Navbar with Hamburger Menu -->
+    <nav class="navbar navbar-expand-lg navbar-light bg-light">
         <div class="container">
             <a class="navbar-brand" href="index.php">Strive High School</a>
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
@@ -21,21 +36,9 @@ require_once 'db_connect.php';
             </button>
             <div class="collapse navbar-collapse" id="navbarNav">
                 <ul class="navbar-nav ms-auto">
-                    <li class="nav-item">
-                        <a class="nav-link" href="index.php">Home</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="login.php">Login</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="register.php">Register</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="user-dashboard.php">User Dashboard</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link active" href="admin-dashboard.php">Admin Dashboard</a>
-                    </li>
+                    <li class="nav-item"><a class="nav-link" href="index.php">Home</a></li>
+                    <li class="nav-item"><a class="nav-link active" href="admin-dashboard.php">Dashboard</a></li>
+                    <li class="nav-item"><a class="nav-link" href="logout.php">Logout</a></li>
                 </ul>
             </div>
         </div>
@@ -44,43 +47,42 @@ require_once 'db_connect.php';
     <!-- Main Content Section -->
     <section class="main-section">
         <div class="container">
-            <h2>Admin Dashboard</h2>
-            <div class="row">
-                <div class="col-md-4">
-                    <div class="card mb-3">
-                        <div class="card-header">Total Registered Learners</div>
-                        <div class="card-body">
-                            <h3 id="totalLearners">45</h3>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-md-4">
-                    <div class="card mb-3">
-                        <div class="card-header">Active Buses</div>
-                        <div class="card-body">
-                            <h3 id="activeBuses">5</h3>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-md-4">
-                    <div class="card mb-3">
-                        <div class="card-header">Routes Operational Status</div>
-                        <div class="card-body">
-                            <p id="routeStatus">3 routes operational</p>
-                        </div>
-                    </div>
-                </div>
-            </div>
+            <h2>Weekly Activity Summary</h2>
+            
+            <!-- Weekly Summary Table -->
+            <table class="table table-striped">
+                <thead>
+                    <tr>
+                        <th>Week Start</th>
+                        <th>Total Registrations</th>
+                        <th>New Enrollments</th>
+                        <th>Waiting List Additions</th>
+                        <th>Bus Serviceability</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <?php foreach ($weeklySummaries as $summary): ?>
+                        <tr>
+                            <td><?php echo date("Y-m-d", strtotime($summary['Week_Start'])); ?></td>
+                            <td><?php echo $summary['Total_Registrations']; ?></td>
+                            <td><?php echo $summary['New_Enrollments']; ?></td>
+                            <td><?php echo $summary['Waiting_List_Additions']; ?></td>
+                            <td><?php echo $summary['Bus_Serviceability']; ?></td>
+                        </tr>
+                    <?php endforeach; ?>
+                </tbody>
+            </table>
         </div>
     </section>
 
     <!-- Footer -->
     <footer class="footer">
-        <div class="container">
-            <span>© 2024 Strive High School. All Rights Reserved.</span>
+        <div class="container text-center">
+            <span>© <?php echo date("Y"); ?> Strive High School. All rights reserved.</span>
         </div>
     </footer>
 
+    <!-- Bootstrap JS for hamburger functionality -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
