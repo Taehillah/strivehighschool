@@ -7,11 +7,39 @@ if (!isset($_SESSION['loggedIn']) || $_SESSION['role'] != 'Admin') {
     exit();
 }
 
-// Fetch weekly summary data
+// Calculate weekly summary dynamically
 try {
-    $stmt = $pdo->prepare("SELECT Week_Start, Total_Registrations, New_Enrollments, Waiting_List_Additions, Bus_Serviceability FROM WeeklySummary ORDER BY Week_Start DESC");
+    // Define start of the current week
+    $weekStart = date("Y-m-d", strtotime("last Monday"));
+
+    // Fetch total registrations
+    $stmt = $pdo->prepare("SELECT COUNT(*) AS Total_Registrations FROM Users");
     $stmt->execute();
-    $weeklySummaries = $stmt->fetchAll(PDO::FETCH_ASSOC);
+    $totalRegistrations = $stmt->fetchColumn();
+
+    // Fetch new enrollments for the current week
+    $stmt = $pdo->prepare("SELECT COUNT(*) AS New_Enrollments FROM Users WHERE enrollment_status = 'Accepted' AND enrollment_date >= :weekStart");
+    $stmt->bindParam(':weekStart', $weekStart);
+    $stmt->execute();
+    $newEnrollments = $stmt->fetchColumn();
+
+    // Fetch waiting list additions for the current week
+    $stmt = $pdo->prepare("SELECT COUNT(*) AS Waiting_List_Additions FROM Users WHERE enrollment_status = 'Waiting List' AND enrollment_date >= :weekStart");
+    $stmt->bindParam(':weekStart', $weekStart);
+    $stmt->execute();
+    $waitingListAdditions = $stmt->fetchColumn();
+
+    // Check bus serviceability status
+    $stmt = $pdo->prepare("SELECT COUNT(*) AS Operational_Buses FROM Buses WHERE service_status = 'Operational'");
+    $stmt->execute();
+    $operationalBuses = $stmt->fetchColumn();
+    
+    $stmt = $pdo->prepare("SELECT COUNT(*) AS Total_Buses FROM Buses");
+    $stmt->execute();
+    $totalBuses = $stmt->fetchColumn();
+
+    $busServiceability = ($operationalBuses == $totalBuses) ? 'All Functional' : 'Some Buses Down';
+    
 } catch (PDOException $e) {
     echo "Error: " . $e->getMessage();
 }
@@ -49,27 +77,25 @@ try {
         <div class="container">
             <h2>Weekly Activity Summary</h2>
             
-            <!-- Weekly Summary Table -->
+            <!-- Weekly Summary Display -->
             <table class="table table-striped">
                 <thead>
                     <tr>
                         <th>Week Start</th>
                         <th>Total Registrations</th>
-                        <th>New Enrollments</th>
-                        <th>Waiting List Additions</th>
+                        <th>New Enrollments (This Week)</th>
+                        <th>Waiting List Additions (This Week)</th>
                         <th>Bus Serviceability</th>
                     </tr>
                 </thead>
                 <tbody>
-                    <?php foreach ($weeklySummaries as $summary): ?>
-                        <tr>
-                            <td><?php echo date("Y-m-d", strtotime($summary['Week_Start'])); ?></td>
-                            <td><?php echo $summary['Total_Registrations']; ?></td>
-                            <td><?php echo $summary['New_Enrollments']; ?></td>
-                            <td><?php echo $summary['Waiting_List_Additions']; ?></td>
-                            <td><?php echo $summary['Bus_Serviceability']; ?></td>
-                        </tr>
-                    <?php endforeach; ?>
+                    <tr>
+                        <td><?php echo $weekStart; ?></td>
+                        <td><?php echo $totalRegistrations; ?></td>
+                        <td><?php echo $newEnrollments; ?></td>
+                        <td><?php echo $waitingListAdditions; ?></td>
+                        <td><?php echo $busServiceability; ?></td>
+                    </tr>
                 </tbody>
             </table>
         </div>
@@ -84,7 +110,5 @@ try {
 
     <!-- Bootstrap JS for hamburger functionality -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-
 </body>
 </html>
