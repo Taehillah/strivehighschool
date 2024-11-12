@@ -10,33 +10,24 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $email = filter_var($_POST['email'], FILTER_SANITIZE_EMAIL);
     $password = $_POST['password'];
 
-    if (empty($email) || empty($password)) {
-        $errorMessage = "Please enter both email and password.";
-    } else {
-        try {
-            $stmt = $pdo->prepare("SELECT * FROM Users WHERE email = :email");
-            $stmt->bindParam(':email', $email, PDO::PARAM_STR);
-            $stmt->execute();
+    try {
+        $stmt = $pdo->prepare("SELECT * FROM Users WHERE email = :email AND verified = 1");
+        $stmt->bindParam(':email', $email);
+        $stmt->execute();
+        $user = $stmt->fetch(PDO::FETCH_ASSOC);
 
-            $user = $stmt->fetch(PDO::FETCH_ASSOC);
+        if ($user && password_verify($password, $user['password'])) {
+            $_SESSION['loggedIn'] = true;
+            $_SESSION['userId'] = $user['User_ID'];
+            $_SESSION['role'] = $user['role'];
 
-            if ($user && password_verify($password, $user['password'])) {
-                $_SESSION['loggedIn'] = true;
-                $_SESSION['userId'] = $user['User_ID'];
-                $_SESSION['role'] = $user['role'];
-
-                if ($user['role'] == 'Admin') {
-                    header("Location: admin-dashboard.php");
-                } else {
-                    header("Location: user-dashboard.php");
-                }
-                exit();
-            } else {
-                $errorMessage = "Invalid email or password.";
-            }
-        } catch (PDOException $e) {
-            $errorMessage = "Error: " . $e->getMessage();
+            header("Location: " . ($user['role'] == 'Admin' ? 'admin-dashboard.php' : 'user-dashboard.php'));
+            exit();
+        } else {
+            echo "Invalid credentials or account not verified.";
         }
+    } catch (PDOException $e) {
+        echo "Error: " . $e->getMessage();
     }
 }
 ?>
