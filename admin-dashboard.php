@@ -68,123 +68,136 @@ try {
 
 } catch (PDOException $e) {
     echo "Error: " . $e->getMessage();
+}<?php
+session_start();
+include 'db_connect.php';
+
+if (!isset($_SESSION['loggedIn']) || $_SESSION['role'] != 'Admin') {
+    header("Location: login.php");
+    exit();
+}
+
+// Fetch route capacity data
+try {
+    $stmt = $pdo->prepare("SELECT route, COUNT(*) AS passenger_count FROM Users WHERE role = 'Learner' GROUP BY route");
+    $stmt->execute();
+    $routeData = $stmt->fetchAll(PDO::FETCH_ASSOC);
+    
+    $routeCapacity = [
+        'Rooihuiskraal' => 50, // example capacity, replace with actual
+        'Wierdapark' => 50,    // example capacity, replace with actual
+        'Centurion' => 50      // example capacity, replace with actual
+    ];
+
+    $routePassengers = [];
+    foreach ($routeData as $route) {
+        $routePassengers[$route['route']] = $route['passenger_count'];
+    }
+
+    // Ensure all routes are present in case they don't have any passengers yet
+    foreach ($routeCapacity as $route => $capacity) {
+        if (!isset($routePassengers[$route])) {
+            $routePassengers[$route] = 0;
+        }
+    }
+
+    // Fetch registration data for the graph
+    $stmt = $pdo->prepare("SELECT DATE(created_at) AS reg_date, COUNT(*) AS registrations FROM Users WHERE role = 'Learner' GROUP BY reg_date ORDER BY reg_date");
+    $stmt->execute();
+    $registrationData = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+} catch (PDOException $e) {
+    echo "Error: " . $e->getMessage();
 }
 ?>
+
 
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Admin Dashboard - Manage Learners and Weekly Summary</title>
+    <title>Admin Dashboard</title>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="assets/css/style.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 <body>
-    <!-- Navbar with Hamburger Menu -->
-    <nav class="navbar navbar-expand-lg navbar-light bg-light">
-        <div class="container">
-            <a class="navbar-brand" href="index.php">Strive High School</a>
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
-                <span class="navbar-toggler-icon"></span>
-            </button>
-            <div class="collapse navbar-collapse" id="navbarNav">
-                <ul class="navbar-nav ms-auto">
-                    <li class="nav-item"><a class="nav-link" href="index.php">Home</a></li>
-                    <li class="nav-item"><a class="nav-link active" href="admin-dashboard.php">Dashboard</a></li>
-                    <li class="nav-item"><a class="nav-link" href="index.php">Logout</a></li>
-                </ul>
-            </div>
+    <div class="container">
+        <h2>Admin Dashboard</h2>
+
+        <!-- Gauge for Route Capacity -->
+        <h3>Route Capacity</h3>
+        <div class="row">
+            <?php foreach ($routeCapacity as $route => $capacity): ?>
+                <div class="col-md-4 text-center">
+                    <h4><?php echo $route; ?></h4>
+                    <canvas id="gauge-<?php echo $route; ?>" width="200" height="200"></canvas>
+                    <p><?php echo $routePassengers[$route] . " / " . $capacity; ?> Passengers</p>
+                </div>
+            <?php endforeach; ?>
         </div>
-    </nav>
 
-    <!-- Main Content Section -->
-    <section class="main-section">
-        <div class="container">
-            <h2>Admin Dashboard</h2>
+        <!-- Graph for Registrations -->
+        <h3>Registration Trends</h3>
+        <canvas id="registrationChart" width="600" height="400"></canvas>
+    </div>
 
-            <!-- Search Form -->
-            <form method="POST" class="d-flex mb-4">
-                <input class="form-control me-2" type="search" name="search_query" placeholder="Search learner by name" aria-label="Search">
-                <button class="btn btn-outline-primary" type="submit">Search</button>
-            </form>
+    <script>
+        // Gauge Charts
+        <?php foreach ($routeCapacity as $route => $capacity): ?>
+            var ctxGauge<?php echo $route; ?> = document.getElementById('gauge-<?php echo $route; ?>').getContext('2d');
+            new Chart(ctxGauge<?php echo $route; ?>, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Occupied', 'Available'],
+                    datasets: [{
+                        data: [<?php echo $routePassengers[$route]; ?>, <?php echo $capacity - $routePassengers[$route]; ?>],
+                        backgroundColor: ['#FF6384', '#36A2EB'],
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    rotation: 1 * Math.PI,
+                    circumference: 1 * Math.PI,
+                    cutout: '70%',
+                    plugins: {
+                        tooltip: { enabled: false }
+                    }
+                }
+            });
+        <?php endforeach; ?>
 
-            <!-- Search Results -->
-            <?php if (!empty($searchResults)): ?>
-                <table class="table table-striped">
-                    <thead>
-                        <tr>
-                            <th>Name</th>
-                            <th>Grade</th>
-                            <th>Current Route</th>
-                            <th>Enrollment Status</th>
-                            <th>Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <?php foreach ($searchResults as $learner): ?>
-                            <tr>
-                                <td><?php echo htmlspecialchars($learner['full_name']); ?></td>
-                                <td><?php echo htmlspecialchars($learner['grade']); ?></td>
-                                <td><?php echo htmlspecialchars($learner['route']); ?></td>
-                                <td><?php echo htmlspecialchars($learner['enrollment_status']); ?></td>
-                                <td>
-                                    <form method="POST" class="d-inline">
-                                        <input type="hidden" name="user_id" value="<?php echo $learner['User_ID']; ?>">
-                                        <select name="new_route" class="form-select form-select-sm mb-1">
-                                            <option value="Rooihuiskraal">Rooihuiskraal</option>
-                                            <option value="Wierdapark">Wierdapark</option>
-                                            <option value="Centurion">Centurion</option>
-                                        </select>
-                                        <button type="submit" name="update_route" class="btn btn-sm btn-primary">Update Route</button>
-                                    </form>
-
-                                    <form method="POST" class="d-inline">
-                                        <input type="hidden" name="user_id" value="<?php echo $learner['User_ID']; ?>">
-                                        <button type="submit" name="delete_learner" class="btn btn-sm btn-danger">Delete</button>
-                                    </form>
-                                </td>
-                            </tr>
-                        <?php endforeach; ?>
-                    </tbody>
-                </table>
-            <?php elseif ($_SERVER["REQUEST_METHOD"] == "POST"): ?>
-                <p class="text-warning">No results found for your search.</p>
-            <?php endif; ?>
-
-            <!-- Weekly Summary Output -->
-            <h3 class="mt-5">Weekly Activity Summary</h3>
-            <table class="table table-striped">
-                <thead>
-                    <tr>
-                        <th>Week Start</th>
-                        <th>Total Registrations</th>
-                        <th>New Enrollments (This Week)</th>
-                        <th>Waiting List Additions (This Week)</th>
-                        <th>Bus Serviceability</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr>
-                        <td><?php echo $weekStart; ?></td>
-                        <td><?php echo $totalRegistrations; ?></td>
-                        <td><?php echo $newEnrollments; ?></td>
-                        <td><?php echo $waitingListAdditions; ?></td>
-                        <td><?php echo $busServiceability; ?></td>
-                    </tr>
-                </tbody>
-            </table>
-        </div>
-    </section>
-
-    <!-- Footer -->
-    <footer class="footer">
-        <div class="container text-center">
-            <span>© <?php echo date("Y"); ?> Strive High School. All rights reserved.</span>
-        </div>
-    </footer>
-
-    <!-- Bootstrap JS for hamburger functionality -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
+        // Registration Line Chart
+        var ctx = document.getElementById('registrationChart').getContext('2d');
+        var registrationChart = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: [
+                    <?php foreach ($registrationData as $data) {
+                        echo '"' . $data['reg_date'] . '", ';
+                    } ?>
+                ],
+                datasets: [{
+                    label: 'Registrations',
+                    data: [
+                        <?php foreach ($registrationData as $data) {
+                            echo $data['registrations'] . ', ';
+                        } ?>
+                    ],
+                    borderColor: '#4CAF50',
+                    backgroundColor: 'rgba(76, 175, 80, 0.2)',
+                    fill: true,
+                    tension: 0.4
+                }]
+            },
+            options: {
+                responsive: true,
+                scales: {
+                    x: { title: { display: true, text: 'Date' } },
+                    y: { title: { display: true, text: 'Number of Registrations' } }
+                }
+            }
+        });
+    </script>
 </body>
 </html>
