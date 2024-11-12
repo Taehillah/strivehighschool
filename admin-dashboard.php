@@ -7,41 +7,49 @@ if (!isset($_SESSION['loggedIn']) || $_SESSION['role'] != 'Admin') {
     exit();
 }
 
-// Calculate weekly summary dynamically
-try {
-    // Define start of the current week
-    $weekStart = date("Y-m-d", strtotime("last Monday"));
+$searchResults = [];
+if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['search_query'])) {
+    $searchQuery = '%' . htmlspecialchars(trim($_POST['search_query'])) . '%';
 
-    // Fetch total registrations
-    $stmt = $pdo->prepare("SELECT COUNT(*) AS Total_Registrations FROM Users");
-    $stmt->execute();
-    $totalRegistrations = $stmt->fetchColumn();
+    // Fetch matching learners based on search
+    try {
+        $stmt = $pdo->prepare("SELECT User_ID, full_name, grade, route, enrollment_status FROM Users WHERE full_name LIKE :searchQuery");
+        $stmt->bindParam(':searchQuery', $searchQuery);
+        $stmt->execute();
+        $searchResults = $stmt->fetchAll(PDO::FETCH_ASSOC);
+    } catch (PDOException $e) {
+        echo "Error: " . $e->getMessage();
+    }
+}
 
-    // Fetch new enrollments for the current week
-    $stmt = $pdo->prepare("SELECT COUNT(*) AS New_Enrollments FROM Users WHERE enrollment_status = 'Accepted' AND enrollment_date >= :weekStart");
-    $stmt->bindParam(':weekStart', $weekStart);
-    $stmt->execute();
-    $newEnrollments = $stmt->fetchColumn();
+// Handle route update
+if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['update_route'])) {
+    $newRoute = $_POST['new_route'];
+    $userId = $_POST['user_id'];
 
-    // Fetch waiting list additions for the current week
-    $stmt = $pdo->prepare("SELECT COUNT(*) AS Waiting_List_Additions FROM Users WHERE enrollment_status = 'Waiting List' AND enrollment_date >= :weekStart");
-    $stmt->bindParam(':weekStart', $weekStart);
-    $stmt->execute();
-    $waitingListAdditions = $stmt->fetchColumn();
+    try {
+        $stmt = $pdo->prepare("UPDATE Users SET route = :newRoute WHERE User_ID = :userId");
+        $stmt->bindParam(':newRoute', $newRoute);
+        $stmt->bindParam(':userId', $userId);
+        $stmt->execute();
+        echo "<script>alert('Route updated successfully');</script>";
+    } catch (PDOException $e) {
+        echo "Error: " . $e->getMessage();
+    }
+}
 
-    // Check bus serviceability status
-    $stmt = $pdo->prepare("SELECT COUNT(*) AS Operational_Buses FROM Buses WHERE service_status = 'Operational'");
-    $stmt->execute();
-    $operationalBuses = $stmt->fetchColumn();
-    
-    $stmt = $pdo->prepare("SELECT COUNT(*) AS Total_Buses FROM Buses");
-    $stmt->execute();
-    $totalBuses = $stmt->fetchColumn();
+// Handle deletion of learner
+if ($_SERVER["REQUEST_METHOD"] == "POST" && isset($_POST['delete_learner'])) {
+    $userId = $_POST['user_id'];
 
-    $busServiceability = ($operationalBuses == $totalBuses) ? 'All Functional' : 'Some Buses Down';
-    
-} catch (PDOException $e) {
-    echo "Error: " . $e->getMessage();
+    try {
+        $stmt = $pdo->prepare("DELETE FROM Users WHERE User_ID = :userId");
+        $stmt->bindParam(':userId', $userId);
+        $stmt->execute();
+        echo "<script>alert('Learner deleted successfully');</script>";
+    } catch (PDOException $e) {
+        echo "Error: " . $e->getMessage();
+    }
 }
 ?>
 
@@ -50,7 +58,7 @@ try {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Admin Dashboard - Weekly Activities</title>
+    <title>Admin Dashboard - Manage Learners</title>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="assets/css/style.css">
 </head>
@@ -75,29 +83,58 @@ try {
     <!-- Main Content Section -->
     <section class="main-section">
         <div class="container">
-            <h2>Weekly Activity Summary</h2>
-            
-            <!-- Weekly Summary Display -->
-            <table class="table table-striped">
-                <thead>
-                    <tr>
-                        <th>Week Start</th>
-                        <th>Total Registrations</th>
-                        <th>New Enrollments (This Week)</th>
-                        <th>Waiting List Additions (This Week)</th>
-                        <th>Bus Serviceability</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr>
-                        <td><?php echo $weekStart; ?></td>
-                        <td><?php echo $totalRegistrations; ?></td>
-                        <td><?php echo $newEnrollments; ?></td>
-                        <td><?php echo $waitingListAdditions; ?></td>
-                        <td><?php echo $busServiceability; ?></td>
-                    </tr>
-                </tbody>
-            </table>
+            <h2>Admin Dashboard</h2>
+
+            <!-- Search Form -->
+            <form method="POST" class="d-flex mb-4">
+                <input class="form-control me-2" type="search" name="search_query" placeholder="Search learner by name" aria-label="Search">
+                <button class="btn btn-outline-primary" type="submit">Search</button>
+            </form>
+
+            <!-- Search Results -->
+            <?php if (!empty($searchResults)): ?>
+                <table class="table table-striped">
+                    <thead>
+                        <tr>
+                            <th>Name</th>
+                            <th>Grade</th>
+                            <th>Current Route</th>
+                            <th>Enrollment Status</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <?php foreach ($searchResults as $learner): ?>
+                            <tr>
+                                <td><?php echo htmlspecialchars($learner['full_name']); ?></td>
+                                <td><?php echo htmlspecialchars($learner['grade']); ?></td>
+                                <td><?php echo htmlspecialchars($learner['route']); ?></td>
+                                <td><?php echo htmlspecialchars($learner['enrollment_status']); ?></td>
+                                <td>
+                                    <!-- Update Route Form -->
+                                    <form method="POST" class="d-inline">
+                                        <input type="hidden" name="user_id" value="<?php echo $learner['User_ID']; ?>">
+                                        <select name="new_route" class="form-select form-select-sm mb-1">
+                                            <option value="Rooihuiskraal">Rooihuiskraal</option>
+                                            <option value="Wierdapark">Wierdapark</option>
+                                            <option value="Centurion">Centurion</option>
+                                        </select>
+                                        <button type="submit" name="update_route" class="btn btn-sm btn-primary">Update Route</button>
+                                    </form>
+
+                                    <!-- Delete Learner Form -->
+                                    <form method="POST" class="d-inline">
+                                        <input type="hidden" name="user_id" value="<?php echo $learner['User_ID']; ?>">
+                                        <button type="submit" name="delete_learner" class="btn btn-sm btn-danger">Delete</button>
+                                    </form>
+                                </td>
+                            </tr>
+                        <?php endforeach; ?>
+                    </tbody>
+                </table>
+            <?php elseif ($_SERVER["REQUEST_METHOD"] == "POST"): ?>
+                <p class="text-warning">No results found for your search.</p>
+            <?php endif; ?>
         </div>
     </section>
 
