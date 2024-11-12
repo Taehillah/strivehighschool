@@ -1,14 +1,12 @@
 <?php
 session_start();
 include 'db_connect.php';
-require 'vendor/autoload.php'; // Required if using Composer
-
-use SendGrid\Mail\Mail;
 
 $title = "Strive High School - Register";
 $errorMessage = "";
 $successMessage = "";
 
+// Handle form submission
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $role = $_POST['role'];
     $fullName = htmlspecialchars(trim($_POST['fullName']));
@@ -16,56 +14,11 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $route = $_POST['route'];
     $email = filter_var($_POST['email'], FILTER_SANITIZE_EMAIL);
     $password = $_POST['password'];
-    $hashedPassword = password_hash($password, PASSWORD_DEFAULT);
 
-    // Generate a unique verification token
-    $verificationToken = bin2hex(random_bytes(16)); // 32-character random token
-
-    try {
-        // Insert the user data along with the verification token
-        $stmt = $pdo->prepare("INSERT INTO Users (role, email, password, route, full_name, grade, verification_token) 
-                               VALUES (:role, :email, :password, :route, :full_name, :grade, :verification_token)");
-        $stmt->execute([
-            ':role' => $role,
-            ':email' => $email,
-            ':password' => $hashedPassword,
-            ':route' => $route,
-            ':full_name' => $fullName,
-            ':grade' => $grade,
-            ':verification_token' => $verificationToken
-        ]);
-
-        // Send verification email using SendGrid
-        $verificationLink = "https://yourwebsite.com/verify.php?token=" . $verificationToken;
-        $subject = "Email Verification - Strive High School";
-        $messageContent = "Hello $fullName,<br><br>Please verify your email by clicking on the link below:<br><a href='$verificationLink'>Verify Email</a><br><br>Thank you!";
-        
-        $email = new Mail();
-        $email->setFrom("no-reply@strivehighschool.com", "Strive High School");
-        $email->setSubject($subject);
-        $email->addTo($email, $fullName);
-        $email->addContent("text/plain", strip_tags($messageContent));
-        $email->addContent("text/html", $messageContent);
-
-        $sendgrid = new \SendGrid(getenv('SENDGRID_API_KEY'));
-
-        try {
-            $response = $sendgrid->send($email);
-            if ($response->statusCode() == 202) {
-                $successMessage = "Registration successful! Please check your email to verify your account.";
-            } else {
-                $errorMessage = "Failed to send verification email.";
-            }
-        } catch (Exception $e) {
-            $errorMessage = 'Caught exception: ' . $e->getMessage();
-        }
-    } catch (PDOException $e) {
-        $errorMessage = "Error: " . $e->getMessage();
-    }
+    // Check for duplicates and process registration as before
+    // (Code for handling duplicates and saving to database goes here)
 }
 ?>
-
-
 
 <!DOCTYPE html>
 <html lang="en">
