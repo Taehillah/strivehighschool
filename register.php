@@ -5,6 +5,7 @@ include 'db_connect.php';
 $title = "Strive High School - Register";
 $errorMessage = "";
 $successMessage = "";
+$otpCode = str_pad(random_int(100000, 999999), 6, '0', STR_PAD_LEFT); // Generating a 6-digit random OTP
 
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $role = $_POST['role'];
@@ -31,9 +32,9 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
         // Insert the user into the database
         $stmt = $pdo->prepare("
-            INSERT INTO Users (role, email, password, route, full_name, grade, assigned_bus) 
-            VALUES (:role, :email, :password, :route, :full_name, :grade, :assigned_bus)
-        ");
+        INSERT INTO Users (role, email, password, route, full_name, grade, assigned_bus, otp_code, verified) 
+        VALUES (:role, :email, :password, :route, :full_name, :grade, :assigned_bus, :otp_code, 0)
+    ");
         $stmt->execute([
             ':role' => $role,
             ':email' => $email,
@@ -41,14 +42,25 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             ':route' => $route,
             ':full_name' => $fullName,
             ':grade' => $grade,
-            ':assigned_bus' => $assignedBus
+            ':assigned_bus' => $assignedBus,
+            ':otp_code' => $otpCode
         ]);
 
         $successMessage = "Registration successful! Your assigned bus is: " . ($assignedBus ?: "Waiting List");
     } catch (PDOException $e) {
         $errorMessage = "Error: " . $e->getMessage();
     }
+
+    $to = $email;
+$subject = "Your OTP Verification Code";
+$message = "Dear $fullName,\n\nYour OTP verification code is: $otpCode\n\nPlease enter this code to verify your email address.\n\nThank you!";
+$headers = "From: no-reply@yourdomain.com\r\n";
+
+// Send the email
+mail($to, $subject, $message, $headers);
 }
+
+$successMessage = "Registration successful! An OTP has been sent to your email address. Please enter it below to verify your account.";
 ?>
 
 
