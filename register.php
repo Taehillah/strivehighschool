@@ -18,12 +18,10 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     try {
         // Assign a bus to the user based on their route
         $stmt = $pdo->prepare("
-            SELECT Bus_Registration 
-            FROM Buses 
-            WHERE Bus_Route = :route AND service_status = 'Operational' 
-            AND (SELECT COUNT(*) FROM Users WHERE assigned_bus = Bus_Registration) < capacity 
-            LIMIT 1
-        ");
+    SELECT TOP 1 Bus_Registration 
+    FROM Buses 
+    WHERE Bus_Route = :route AND service_status = 'Operational' 
+    AND (SELECT COUNT(*) FROM Users WHERE assigned_bus = Bus_Registration) < capacity");
         $stmt->execute([':route' => $route]);
         $assignedBus = $stmt->fetchColumn();
 
