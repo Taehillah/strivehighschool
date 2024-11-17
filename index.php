@@ -105,7 +105,7 @@ $_SESSION['role'] = $_SESSION['role'] ?? 'Guest'; // Role can be 'Admin', 'User'
     <section class="welcome-section">
         <div class="container">
             <h1>Welcome to Strive High School Bus Registration System</h1>
-            <p class="lead">Securely register your learner for convenient and safe school transportation.</p>
+            <p class="lead">Securely register for convenient and safe school transportation.</p>
             <a href="register.html" class="btn btn-primary mt-3">Enter Here</a>
         </div>
     </section>

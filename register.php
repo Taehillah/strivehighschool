@@ -5,9 +5,9 @@ include 'db_connect.php';
 $title = "Strive High School - Register";
 $errorMessage = "";
 $successMessage = "";
-$otpCode = str_pad(random_int(100000, 999999), 6, '0', STR_PAD_LEFT); // Generating a 6-digit random OTP
 
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
+    // Retrieve and sanitize form data
     $role = $_POST['role'];
     $fullName = htmlspecialchars(trim($_POST['fullName']));
     $grade = $_POST['grade'];
@@ -16,62 +16,92 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $password = $_POST['password'];
     $hashedPassword = password_hash($password, PASSWORD_DEFAULT);
 
-    try {
-        // Assign a bus to the user based on their route
-        $stmt = $pdo->prepare("
-    SELECT TOP 1 Bus_Registration 
-    FROM Buses 
-    WHERE Bus_Route = :route AND service_status = 'Operational' 
-    AND (SELECT COUNT(*) FROM Users WHERE assigned_bus = Bus_Registration) < capacity");
-        $stmt->execute([':route' => $route]);
-        $assignedBus = $stmt->fetchColumn();
+    // Validate inputs
+    if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+        $errorMessage = "Invalid email address.";
+    } elseif (strlen($password) < 8) {
+        $errorMessage = "Password must be at least 8 characters long.";
+    } else {
+        // Generate OTP
+        $otpCode = str_pad(random_int(100000, 999999), 6, '0', STR_PAD_LEFT);
 
-        if (!$assignedBus) {
-            $assignedBus = null; // No available bus, user goes to the waiting list
+        try {
+            // Check if the email already exists
+            $stmt = $pdo->prepare("SELECT COUNT(*) FROM Users WHERE email = :email");
+            $stmt->execute([':email' => $email]);
+            $emailExists = $stmt->fetchColumn();
+
+            if ($emailExists) {
+                $errorMessage = "An account with this email already exists.";
+            } else {
+                // Assign a bus to the user based on their route
+                $stmt = $pdo->prepare("
+                    SELECT TOP 1 Bus_Registration 
+                    FROM Buses 
+                    WHERE Bus_Route = :route AND service_status = 'Operational' 
+                    AND (SELECT COUNT(*) FROM Users WHERE assigned_bus = Bus_Registration) < capacity
+                ");
+                $stmt->execute([':route' => $route]);
+                $assignedBus = $stmt->fetchColumn();
+
+                if (!$assignedBus) {
+                    $assignedBus = null; // No available bus, user goes to the waiting list
+                }
+
+                // Insert the user into the database
+                $stmt = $pdo->prepare("
+                    INSERT INTO Users (role, email, password, route, full_name, grade, assigned_bus, otp_code, verified) 
+                    VALUES (:role, :email, :password, :route, :full_name, :grade, :assigned_bus, :otp_code, 0)
+                ");
+                $stmt->execute([
+                    ':role' => $role,
+                    ':email' => $email,
+                    ':password' => $hashedPassword,
+                    ':route' => $route,
+                    ':full_name' => $fullName,
+                    ':grade' => $grade,
+                    ':assigned_bus' => $assignedBus,
+                    ':otp_code' => $otpCode
+                ]);
+
+                // Send OTP via email using mail()
+                $to = $email;
+                $subject = "Your OTP Verification Code";
+                $message = "Dear $fullName,\n\nYour OTP verification code is: $otpCode\n\nPlease enter this code to verify your email address.\n\nThank you!";
+                $headers = "From: no-reply@yourdomain.com\r\n";
+                $headers .= "Reply-To: no-reply@yourdomain.com\r\n";
+                $headers .= "Content-Type: text/plain; charset=UTF-8\r\n";
+
+                // Send the email
+                if (mail($to, $subject, $message, $headers)) {
+                    // Store email in session and redirect to verify_otp.php
+                    $_SESSION['email'] = $email;
+                    $_SESSION['successMessage'] = "Registration successful! An OTP has been sent to your email address.";
+                    header("Location: verify_otp.php");
+                    exit();
+                } else {
+                    $errorMessage = "Failed to send OTP email. Please try again later.";
+                }
+            }
+        } catch (PDOException $e) {
+            error_log($e->getMessage());
+            $errorMessage = "An error occurred during registration. Please try again later.";
         }
-
-        // Insert the user into the database
-        $stmt = $pdo->prepare("
-        INSERT INTO Users (role, email, password, route, full_name, grade, assigned_bus, otp_code, verified) 
-        VALUES (:role, :email, :password, :route, :full_name, :grade, :assigned_bus, :otp_code, 0)
-    ");
-        $stmt->execute([
-            ':role' => $role,
-            ':email' => $email,
-            ':password' => $hashedPassword,
-            ':route' => $route,
-            ':full_name' => $fullName,
-            ':grade' => $grade,
-            ':assigned_bus' => $assignedBus,
-            ':otp_code' => $otpCode
-        ]);
-
-        $successMessage = "Registration successful! Your assigned bus is: " . ($assignedBus ?: "Waiting List");
-    } catch (PDOException $e) {
-        $errorMessage = "Error: " . $e->getMessage();
     }
-
-    $to = $email;
-$subject = "Your OTP Verification Code";
-$message = "Dear $fullName,\n\nYour OTP verification code is: $otpCode\n\nPlease enter this code to verify your email address.\n\nThank you!";
-$headers = "From: no-reply@yourdomain.com\r\n";
-
-// Send the email
-mail($to, $subject, $message, $headers);
 }
-
-$successMessage = "Registration successful! An OTP has been sent to your email address. Please enter it below to verify your account.";
 ?>
-
 
 <!DOCTYPE html>
 <html lang="en">
 <head>
+    <!-- Your existing head content -->
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title><?php echo $title; ?></title>
-    <link rel="stylesheet" href="assets/css/style.css">
+    <!-- Include Bootstrap CSS -->
     <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Your custom styles -->
+    <link rel="stylesheet" href="assets/css/style.css">
     <script>
         // JavaScript function to enable/disable fields based on role selection
         function toggleFieldsBasedOnRole() {
@@ -136,7 +166,7 @@ $successMessage = "Registration successful! An OTP has been sent to your email a
 
                 <!-- Full Name -->
                 <div class="mb-3">
-                    <label for="fullName" class="form-label">Full Name(of Learner or Admin)</label>
+                    <label for="fullName" class="form-label">Full Name (of Learner or Admin)</label>
                     <input type="text" class="form-control" id="fullName" name="fullName" required>
                 </div>
 
@@ -165,7 +195,7 @@ $successMessage = "Registration successful! An OTP has been sent to your email a
 
                 <!-- Password -->
                 <div class="mb-3">
-                    <label for="password" class="form-label">Password</label>
+                    <label for="password" class="form-label">Password (minimum 8 characters)</label>
                     <input type="password" class="form-control" id="password" name="password" required>
                 </div>
 
@@ -181,7 +211,7 @@ $successMessage = "Registration successful! An OTP has been sent to your email a
         </div>
     </footer>
 
-    <!-- Bootstrap JS for hamburger functionality -->
+    <!-- Bootstrap JS for functionality -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>

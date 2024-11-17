@@ -7,7 +7,7 @@ $successMessage = "";
 
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $otpCode = $_POST['otp_code'];
-    $email = $_SESSION['email']; // Store the user's email in session during registration
+    $email = $_SESSION['email']; // Get the email from session
 
     try {
         // Retrieve the OTP code from the database
@@ -21,12 +21,13 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             $stmt->execute([':email' => $email]);
 
             $successMessage = "Your email has been verified! You can now log in.";
+            // Optionally, redirect to login page after a few seconds
         } else {
             $errorMessage = "Invalid OTP code. Please try again.";
         }
     } catch (PDOException $e) {
-        $errorMessage = "An error occurred. Please try again later.";
         error_log($e->getMessage());
+        $errorMessage = "An error occurred. Please try again later.";
     }
 }
 ?>
@@ -82,7 +83,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             <?php endif; ?>
         </div>
     </section>
-
+    
     <footer class="footer">
         <div class="container text-center">
             <span>© <?php echo date("Y"); ?> Strive High School. All rights reserved.</span>
