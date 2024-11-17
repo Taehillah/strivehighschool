@@ -12,13 +12,19 @@ $role = $_SESSION['role'];
 $name_of_the_learner = '';
 $status = '';
 $waitingListPosition = '';
+$isVerified = false;
+$assignedBusRegistration = '';
 $busRegistration = '';
 $busRoute = '';
 $busTimings = '';
 
 try {
-    // Retrieve user details and enrollment status
-    $stmt = $pdo->prepare("SELECT full_name, role, enrollment_status, waiting_list_position, assigned_bus FROM Users WHERE User_ID = :userId");
+    // Retrieve user details, verification status, and assigned bus
+    $stmt = $pdo->prepare("
+        SELECT full_name, role, enrollment_status, waiting_list_position, verified, assigned_bus 
+        FROM Users 
+        WHERE User_ID = :userId
+    ");
     $stmt->bindParam(':userId', $userId, PDO::PARAM_INT);
     $stmt->execute();
     $user = $stmt->fetch(PDO::FETCH_ASSOC);
@@ -27,14 +33,17 @@ try {
         $name_of_the_learner = $user['full_name'];
         $status = $user['enrollment_status'];
         $waitingListPosition = $user['waiting_list_position'];
+        $isVerified = $user['verified'];
         $assignedBusRegistration = $user['assigned_bus'];
     }
 
-    // Retrieve bus information if the user is assigned a bus
-    if ($status === 'Accepted' && $assignedBusRegistration) {
-        $stmt = $pdo->prepare("SELECT Bus_Registration, Bus_Route, Bus_Timings 
-                               FROM Buses 
-                               WHERE Bus_Registration = :busRegistration");
+    // Retrieve bus information if the user has an assigned bus
+    if ($assignedBusRegistration) {
+        $stmt = $pdo->prepare("
+            SELECT Bus_Registration, Bus_Route, Bus_Timings 
+            FROM Buses 
+            WHERE Bus_Registration = :busRegistration
+        ");
         $stmt->bindParam(':busRegistration', $assignedBusRegistration, PDO::PARAM_STR);
         $stmt->execute();
         $bus = $stmt->fetch(PDO::FETCH_ASSOC);
@@ -46,7 +55,9 @@ try {
         }
     }
 } catch (PDOException $e) {
-    echo "Error: " . $e->getMessage();
+    // Log the error message
+    error_log($e->getMessage());
+    echo "An unexpected error occurred. Please try again later.";
 }
 ?>
 
@@ -81,6 +92,14 @@ try {
         <div class="container">
             <h2>Welcome, <?php echo htmlspecialchars($name_of_the_learner) . "'s " . htmlspecialchars($role); ?></h2>
 
+            <!-- Verification Status -->
+            <div class="card mb-4">
+                <div class="card-header">Verification Status</div>
+                <div class="card-body">
+                    <p>Your account is: <strong><?php echo $isVerified ? 'Verified' : 'Not Verified'; ?></strong></p>
+                </div>
+            </div>
+
             <!-- Enrollment Status -->
             <div class="card mb-4">
                 <div class="card-header">Enrollment Status</div>
@@ -93,23 +112,18 @@ try {
             </div>
 
             <!-- Bus Information -->
-            <?php if ($status === 'Accepted' && $busRegistration): ?>
-                <div class="card">
-                    <div class="card-header">Bus Information</div>
-                    <div class="card-body">
-                        <p>Assigned Bus: <strong><?php echo htmlspecialchars($busRegistration); ?></strong></p>
+            <div class="card mb-4">
+                <div class="card-header">Bus Information</div>
+                <div class="card-body">
+                    <?php if ($assignedBusRegistration): ?>
+                        <p>Assigned Bus Number: <strong><?php echo htmlspecialchars($assignedBusRegistration); ?></strong></p>
                         <p>Route: <strong><?php echo htmlspecialchars($busRoute); ?></strong></p>
                         <p>Timings: <strong><?php echo htmlspecialchars($busTimings); ?></strong></p>
-                    </div>
-                </div>
-            <?php else: ?>
-                <div class="card">
-                    <div class="card-header">Bus Information</div>
-                    <div class="card-body">
+                    <?php else: ?>
                         <p>No bus assigned yet.</p>
-                    </div>
+                    <?php endif; ?>
                 </div>
-            <?php endif; ?>
+            </div>
         </div>
     </section>
 
