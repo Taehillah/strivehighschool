@@ -31,10 +31,9 @@ try {
 
     // Retrieve bus information if the user is assigned a bus
     if ($status === 'Accepted') {
-        $stmt = $pdo->prepare("SELECT Buses.Bus_Registration, Buses.Bus_Route, Buses.Bus_Timings 
-                               FROM Buses 
-                               JOIN UserBuses ON Buses.Bus_ID = UserBuses.Bus_ID 
-                               WHERE UserBuses.User_ID = :userId");
+        $stmt = $pdo->prepare("SELECT full_name, role, enrollment_status, waiting_list_position, assigned_bus 
+        FROM Users 
+        WHERE User_ID = :userId");
         $stmt->bindParam(':userId', $userId, PDO::PARAM_INT);
         $stmt->execute();
         $bus = $stmt->fetch(PDO::FETCH_ASSOC);
