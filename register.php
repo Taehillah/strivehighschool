@@ -2,6 +2,11 @@
 session_start();
 include 'db_connect.php';
 
+// Include the Composer autoloader
+require 'vendor/autoload.php';
+
+use Mailgun\Mailgun;
+
 $title = "Strive High School - Register";
 $errorMessage = "";
 $successMessage = "";
@@ -64,22 +69,30 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                     ':otp_code' => $otpCode
                 ]);
 
-                // Send OTP via email using mail()
-                $to = $email;
-                $subject = "Your OTP Verification Code";
-                $message = "Dear $fullName,\n\nYour OTP verification code is: $otpCode\n\nPlease enter this code to verify your email address.\n\nThank you!";
-                $headers = "From: no-reply@yourdomain.com\r\n";
-                $headers .= "Reply-To: no-reply@yourdomain.com\r\n";
-                $headers .= "Content-Type: text/plain; charset=UTF-8\r\n";
+                // Send OTP via email using Mailgun
+                $mgClient = Mailgun::create('ed0824fd2d10b66044f20b9cecde9936-79295dd0-0f3c0ee3'); // Replace with your Mailgun Private API Key
+                $domain = "sandbox6fcd1c67273b404c848b97e3926b4dc4.mailgun.org"; // Replace with your verified domain
 
-                // Send the email
-                if (mail($to, $subject, $message, $headers)) {
+                // Prepare email parameters
+                $params = [
+                    'from'    => 'Strive High School <no-reply@sandbox6fcd1c67273b404c848b97e3926b4dc4.mailgun.org>',
+                    'to'      => $email,
+                    'subject' => 'Your OTP Verification Code',
+                    'text'    => "Dear $fullName,\n\nYour OTP verification code is: $otpCode\n\nPlease enter this code to verify your email address.\n\nThank you!",
+                ];
+
+                try {
+                    // Send the email
+                    $mgClient->messages()->send($domain, $params);
+
                     // Store email in session and redirect to verify_otp.php
                     $_SESSION['email'] = $email;
                     $_SESSION['successMessage'] = "Registration successful! An OTP has been sent to your email address.";
                     header("Location: verify_otp.php");
                     exit();
-                } else {
+                } catch (Exception $e) {
+                    // Log the error message
+                    error_log('Mailgun Error: ' . $e->getMessage());
                     $errorMessage = "Failed to send OTP email. Please try again later.";
                 }
             }
@@ -90,6 +103,8 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     }
 }
 ?>
+
+<!-- Your existing HTML content remains the same -->
 
 <!DOCTYPE html>
 <html lang="en">
