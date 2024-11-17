@@ -6,7 +6,6 @@ $title = "Strive High School - Register";
 $errorMessage = "";
 $successMessage = "";
 
-// Handle form submission
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $role = $_POST['role'];
     $fullName = htmlspecialchars(trim($_POST['fullName']));
@@ -14,11 +13,46 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $route = $_POST['route'];
     $email = filter_var($_POST['email'], FILTER_SANITIZE_EMAIL);
     $password = $_POST['password'];
+    $hashedPassword = password_hash($password, PASSWORD_DEFAULT);
 
-    // Check for duplicates and process registration as before
-    // (Code for handling duplicates and saving to database goes here)
+    try {
+        // Assign a bus to the user based on their route
+        $stmt = $pdo->prepare("
+            SELECT Bus_Registration 
+            FROM Buses 
+            WHERE Bus_Route = :route AND service_status = 'Operational' 
+            AND (SELECT COUNT(*) FROM Users WHERE assigned_bus = Bus_Registration) < capacity 
+            LIMIT 1
+        ");
+        $stmt->execute([':route' => $route]);
+        $assignedBus = $stmt->fetchColumn();
+
+        if (!$assignedBus) {
+            $assignedBus = null; // No available bus, user goes to the waiting list
+        }
+
+        // Insert the user into the database
+        $stmt = $pdo->prepare("
+            INSERT INTO Users (role, email, password, route, full_name, grade, assigned_bus) 
+            VALUES (:role, :email, :password, :route, :full_name, :grade, :assigned_bus)
+        ");
+        $stmt->execute([
+            ':role' => $role,
+            ':email' => $email,
+            ':password' => $hashedPassword,
+            ':route' => $route,
+            ':full_name' => $fullName,
+            ':grade' => $grade,
+            ':assigned_bus' => $assignedBus
+        ]);
+
+        $successMessage = "Registration successful! Your assigned bus is: " . ($assignedBus ?: "Waiting List");
+    } catch (PDOException $e) {
+        $errorMessage = "Error: " . $e->getMessage();
+    }
 }
 ?>
+
 
 <!DOCTYPE html>
 <html lang="en">
