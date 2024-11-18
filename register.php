@@ -2,10 +2,7 @@
 session_start();
 include 'db_connect.php';
 
-// Include the Composer autoloader
-require 'vendor/autoload.php';
 
-use Mailgun\Mailgun;
 
 $title = "Strive High School - Register";
 $errorMessage = "";
