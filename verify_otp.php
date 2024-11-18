@@ -8,16 +8,16 @@ $successMessage = "";
 
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
     // Retrieve and sanitize form data
-    $otpCode = htmlspecialchars(trim($_POST['otpCode']));
+    $otpCode = preg_replace("/[^0-9]/", "", htmlspecialchars(trim($_POST['otpCode'])));
     $phoneNumber = $_SESSION['phoneNumber'];
 
     try {
         // Check if the OTP code is correct
-        $stmt = $pdo->prepare("SELECT COUNT(*) FROM Users WHERE phoneNumber = :phoneNumber AND otp_code = :otp_code");
+        $stmt = $pdo->prepare("SELECT * FROM Users WHERE phoneNumber = :phoneNumber AND otp_code = :otp_code");
         $stmt->execute([':phoneNumber' => $phoneNumber, ':otp_code' => $otpCode]);
-        $otpValid = $stmt->fetchColumn();
+        $user = $stmt->fetch(PDO::FETCH_ASSOC);
 
-        if ($otpValid) {
+        if ($user) {
             // Update the user to mark them as verified
             $stmt = $pdo->prepare("UPDATE Users SET verified = 1 WHERE phoneNumber = :phoneNumber");
             $stmt->execute([':phoneNumber' => $phoneNumber]);
