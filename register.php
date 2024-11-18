@@ -95,7 +95,7 @@ function sendOtpSms($phoneNumber, $otpCode) {
 
     try {
         $response = $client->sms()->send(
-            new SMS($phoneNumber, 'StriveHighSchool', "Your OTP code is: $otpCode")
+            new SMS($phoneNumber, 'StriveHigh', "Your OTP code is: $otpCode"+"<br> Please enter the above code to verify your phone number.")
         );
 
         $message = $response->current();
