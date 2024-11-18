@@ -2,9 +2,9 @@
 session_start();
 include 'db_connect.php';
 
-use PHPMailer\PHPMailer\PHPMailer;
-use PHPMailer\PHPMailer\Exception;
-use League\OAuth2\Client\Provider\Google;
+use Vonage\Client;
+use Vonage\Client\Credentials\Basic;
+use Vonage\SMS\Message\SMS;
 
 require 'vendor/autoload.php';
 
@@ -14,7 +14,6 @@ $successMessage = "";
 
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
     // Retrieve and sanitize form data
-    // Form Data
     $role = !empty($_POST['role']) ? $_POST['role'] : null;
     $fullName = htmlspecialchars(trim($_POST['fullName']));
     $grade = $_POST['grade'];
@@ -74,16 +73,14 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                 $stmt->bindParam(':phoneNumber', $phoneNumber);
                 $stmt->execute();
 
-                // Send OTP via WhatsApp
-                if (sendOtpWhatsApp($phoneNumber, $otpCode)) {
-                    
+                // Send OTP via SMS
+                if (sendOtpSms($phoneNumber, $otpCode)) {
                     $_SESSION['successMessage'] = "Registration successful! Please enter your OTP to verify your phone number.";
                     header("Location: verify_otp.php");
                     exit();
                 } else {
-                    $errorMessage = "Unable to send OTP via WhatsApp. Please try again later.";
+                    $errorMessage = "Unable to send OTP via SMS. Please try again later.";
                 }
-                $errorMessage = "Unable to send OTP. Please try again later.";
             }
         } catch (PDOException $e) {
             error_log($e->getMessage());
@@ -92,49 +89,29 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     }
 }
 
-function sendOtpWhatsApp($phoneNumber, $otpCode) {
-    $url = 'https://messages-sandbox.nexmo.com/v1/messages';
-    $apiKey = '240ae5a2';
-    $apiSecret = '5dLWgFY5NZqHSYD4';
-    $from = '14157386102';
-    
-    $data = [
-        'from' => $from,
-        'to' => "whatsapp:$phoneNumber",
-        'message_type' => 'text',
-        'text' => "Your OTP code for Strive High School is: $otpCode",
-        'channel' => 'whatsapp'
-    ];
+function sendOtpSms($phoneNumber, $otpCode) {
+    $basic  = new Basic("240ae5a2", "5dLWgFY5NZqHSYD4");
+    $client = new Client($basic);
 
-    $options = [
-        CURLOPT_URL => $url,
-        CURLOPT_RETURNTRANSFER => true,
-        CURLOPT_HTTPAUTH => CURLAUTH_BASIC,
-        CURLOPT_USERPWD => "$apiKey:$apiSecret",
-        CURLOPT_HTTPHEADER => [
-            'Content-Type: application/json',
-            'Accept: application/json'
-        ],
-        CURLOPT_POST => true,
-        CURLOPT_POSTFIELDS => json_encode($data)
-    ];
+    try {
+        $response = $client->sms()->send(
+            new SMS($phoneNumber, 'StriveHighSchool', "Your OTP code is: $otpCode")
+        );
 
-    $ch = curl_init();
-    curl_setopt_array($ch, $options);
-    $response = curl_exec($ch);
-    $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
-    curl_close($ch);
+        $message = $response->current();
 
-    if ($httpCode == 202) {
-        return true;
-    } else {
-        error_log("Failed to send WhatsApp message. Response: $response");
+        if ($message->getStatus() == 0) {
+            return true;
+        } else {
+            error_log("The message failed with status: " . $message->getStatus());
+            return false;
+        }
+    } catch (Exception $e) {
+        error_log("Failed to send SMS. Error: " . $e->getMessage());
         return false;
     }
 }
 ?>
-
-<!-- Your existing HTML content remains the same -->
 
 <!DOCTYPE html>
 <html lang="en">
