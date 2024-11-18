@@ -2,6 +2,11 @@
 session_start();
 include 'db_connect.php';
 
+use PHPMailer\PHPMailer\PHPMailer;
+use PHPMailer\PHPMailer\Exception;
+
+require 'vendor/autoload.php';
+
 $title = "Strive High School - Register";
 $errorMessage = "";
 $successMessage = "";
@@ -63,16 +68,50 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                 $stmt->bindParam(':otp_code', $otpCode);
                 $stmt->execute();
 
-                // Store email in session and redirect to verify_otp.php
-                $_SESSION['email'] = $email;
-                $_SESSION['successMessage'] = "Registration successful! Please enter your OTP to verify your email address.";
-                header("Location: verify_otp.php");
-                exit();
+                // Send OTP email
+                if (sendOtpEmail($email, $otpCode)) {
+                    $_SESSION['email'] = $email;
+                    $_SESSION['successMessage'] = "Registration successful! Please enter your OTP to verify your email address.";
+                    header("Location: verify_otp.php");
+                    exit();
+                } else {
+                    $errorMessage = "Unable to send OTP. Please try again later.";
+                }
             }
         } catch (PDOException $e) {
             error_log($e->getMessage());
             $errorMessage = "An error occurred during registration. Please try again later.";
         }
+    }
+}
+
+function sendOtpEmail($email, $otpCode) {
+    $mail = new PHPMailer(true);
+
+    try {
+        //Server settings
+        $mail->isSMTP();
+        $mail->Host = 'smtp.gmail.com';  // Set Gmail SMTP server
+        $mail->SMTPAuth = true;
+        $mail->Username = 'ishmael43385508@gmail.com';  // Your Gmail address
+        $mail->Password = 'Ishmael@12345';           // Your Gmail password
+        $mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;
+        $mail->Port = 587;
+
+        //Recipients
+        $mail->setFrom('no-reply@strivehighschool.com', 'Strive High School');
+        $mail->addAddress($email);
+
+        //Content
+        $mail->isHTML(true);
+        $mail->Subject = 'Your OTP Code';
+        $mail->Body = "Dear User,<br><br>Your OTP code is: <strong>$otpCode</strong><br><br>Please enter this code to complete your registration.";
+
+        $mail->send();
+        return true;
+    } catch (Exception $e) {
+        error_log("Message could not be sent. Mailer Error: {$mail->ErrorInfo}");
+        return false;
     }
 }
 ?>
@@ -90,23 +129,6 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet">
     <!-- Your custom styles -->
     <link rel="stylesheet" href="assets/css/style.css">
-    <script>
-        // JavaScript function to enable/disable fields based on role selection
-        function toggleFieldsBasedOnRole() {
-            const role = document.getElementById('role').value;
-            const isAdmin = role === 'Admin';
-
-            // Only disable the grade and route fields for Admin role
-            document.getElementById('grade').disabled = isAdmin;
-            document.getElementById('route').disabled = isAdmin;
-        }
-
-        // Initialize field state on page load
-        window.addEventListener('DOMContentLoaded', (event) => {
-            toggleFieldsBasedOnRole(); // Initialize based on current selection
-            document.getElementById('role').addEventListener('change', toggleFieldsBasedOnRole);
-        });
-    </script>
 </head>
 <body>
     <!-- Navbar, similar to other pages -->
@@ -138,7 +160,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                 <div class="alert alert-danger"><?php echo $errorMessage; ?></div>
             <?php endif; ?>
 
-            <form action="register.php" method="post">
+            <form action="register_user.php" method="post">
                 <!-- Role Dropdown -->
                 <div class="mb-3">
                     <label for="role" class="form-label">Role</label>
