@@ -14,12 +14,8 @@ $successMessage = "";
 
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
     // Retrieve and sanitize form data
-    $role = !empty($_POST['role']) ? $_POST['role'] : null;
-    $fullName = htmlspecialchars(trim($_POST['fullName']));
-    $grade = $_POST['grade'];
-    $route = $_POST['route'];
-    $email = filter_var($_POST['email'], FILTER_SANITIZE_EMAIL);
-    $password = $_POST['password'];
+    $1
+    $phoneNumber = htmlspecialchars(trim($_POST['phoneNumber']));
     $hashedPassword = password_hash($password, PASSWORD_DEFAULT);
 
     // Validate inputs
@@ -58,8 +54,8 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
                 // Insert the user into the database
                 $stmt = $pdo->prepare("
-                    INSERT INTO Users (role, email, password, route, full_name, grade, assigned_bus, otp_code, verified) 
-                    VALUES (:role, :email, :password, :route, :full_name, :grade, :assigned_bus, :otp_code, 0)
+                    INSERT INTO Users (role, email, password, route, full_name, grade, assigned_bus, otp_code, verified, phone_number) 
+                    VALUES (:role, :email, :password, :route, :full_name, :grade, :assigned_bus, :otp_code, 0, :phone_number)
                 ");
                 $stmt->bindParam(':role', $role);
                 $stmt->bindParam(':email', $email);
@@ -69,6 +65,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                 $stmt->bindParam(':grade', $grade);
                 $stmt->bindParam(':assigned_bus', $assignedBus, PDO::PARAM_NULL);
                 $stmt->bindParam(':otp_code', $otpCode);
+                $stmt->bindParam(':phone_number', $phoneNumber);
                 $stmt->execute();
 
                 // Send OTP email
@@ -94,13 +91,13 @@ function sendOtpEmail($email, $otpCode) {
     try {
         // OAuth2 provider
         $provider = new Google([
-            'clientId'     => '62038903349-c355nk7d3abjmpehtijub2rste5aok9n.apps.googleusercontent.com',
-            'clientSecret' => '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',
+            'clientId'     => 'YOUR_GOOGLE_CLIENT_ID',
+            'clientSecret' => 'YOUR_GOOGLE_CLIENT_SECRET',
         ]);
 
         // Obtain an access token
-        $accessToken = $provider->getAccessToken('https://oauth2.googleapis.com/token', [
-            'https://oauth2.googleapis.com/token' => 'https://oauth2.googleapis.com/token'
+        $accessToken = $provider->getAccessToken('refresh_token', [
+            'refresh_token' => 'YOUR_GOOGLE_REFRESH_TOKEN'
         ]);
 
         //Server settings
@@ -114,10 +111,10 @@ function sendOtpEmail($email, $otpCode) {
         $mail->AuthType = 'XOAUTH2';
         $mail->setOAuth([
             'provider' => $provider,
-            'clientId' => '62038903349-c355nk7d3abjmpehtijub2rste5aok9n.apps.googleusercontent.com',
-            'clientSecret' => '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',
-            'refreshToken' => 'https://oauth2.googleapis.com/token',
-            'userName' => 'ishmael43385508@gmail.com'
+            'clientId' => 'YOUR_GOOGLE_CLIENT_ID',
+            'clientSecret' => 'YOUR_GOOGLE_CLIENT_SECRET',
+            'refreshToken' => 'YOUR_GOOGLE_REFRESH_TOKEN',
+            'userName' => 'your-gmail-address@gmail.com'
         ]);
 
         //Recipients
@@ -209,14 +206,12 @@ function sendOtpEmail($email, $otpCode) {
                 </div>
 
                 <!-- Route -->
+                <div class="mb-3">$1</div>
+
+                <!-- Phone Number -->
                 <div class="mb-3">
-                    <label for="route" class="form-label">Preferred Route</label>
-                    <select class="form-select" id="route" name="route" required>
-                        <option value="">Select Route</option>
-                        <option value="Rooihuiskraal">Rooihuiskraal</option>
-                        <option value="Wierdapark">Wierdapark</option>
-                        <option value="Centurion">Centurion</option>
-                    </select>
+                    <label for="phoneNumber" class="form-label">Phone Number</label>
+                    <input type="tel" class="form-control" id="phoneNumber" name="phoneNumber" required>
                 </div>
 
                 <!-- Email -->
