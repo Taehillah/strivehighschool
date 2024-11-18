@@ -4,6 +4,7 @@ include 'db_connect.php';
 
 use PHPMailer\PHPMailer\PHPMailer;
 use PHPMailer\PHPMailer\Exception;
+use League\OAuth2\Client\Provider\Google;
 
 require 'vendor/autoload.php';
 
@@ -91,14 +92,33 @@ function sendOtpEmail($email, $otpCode) {
     $mail = new PHPMailer(true);
 
     try {
+        // OAuth2 provider
+        $provider = new Google([
+            'clientId'     => '62038903349-c355nk7d3abjmpehtijub2rste5aok9n.apps.googleusercontent.com',
+            'clientSecret' => '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',
+        ]);
+
+        // Obtain an access token
+        $accessToken = $provider->getAccessToken('refresh_token', [
+            'refresh_token' => 'https://oauth2.googleapis.com/token'
+        ]);
+
         //Server settings
         $mail->isSMTP();
         $mail->Host = 'smtp.gmail.com';  // Set Gmail SMTP server
         $mail->SMTPAuth = true;
-        $mail->Username = 'ishmael43385508@gmail.com';  // Your Gmail address
-        $mail->Password = 'Ishmael@12345';           // Your Gmail password
         $mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;
         $mail->Port = 587;
+
+        //Set OAuth
+        $mail->AuthType = 'XOAUTH2';
+        $mail->setOAuth([
+            'provider' => $provider,
+            'clientId' => '62038903349-c355nk7d3abjmpehtijub2rste5aok9n.apps.googleusercontent.com',
+            'clientSecret' => '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',
+            'refreshToken' => 'https://oauth2.googleapis.com/token',
+            'userName' => 'ishmael43385508@gmail.com'
+        ]);
 
         //Recipients
         $mail->setFrom('no-reply@strivehighschool.com', 'Strive High School');
