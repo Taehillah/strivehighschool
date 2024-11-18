@@ -13,7 +13,7 @@ $successMessage = "";
 
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
     // Retrieve and sanitize form data
-    $role = $_POST['role'];
+    $role = !empty($_POST['role']) ? $_POST['role'] : null;
     $fullName = htmlspecialchars(trim($_POST['fullName']));
     $grade = $_POST['grade'];
     $route = $_POST['route'];
@@ -22,7 +22,9 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $hashedPassword = password_hash($password, PASSWORD_DEFAULT);
 
     // Validate inputs
-    if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+    if (!$role) {
+        $errorMessage = "Please select a role.";
+    } elseif (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
         $errorMessage = "Invalid email address.";
     } elseif (strlen($password) < 8) {
         $errorMessage = "Password must be at least 8 characters long.";
