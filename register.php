@@ -99,8 +99,8 @@ function sendOtpEmail($email, $otpCode) {
         ]);
 
         // Obtain an access token
-        $accessToken = $provider->getAccessToken('refresh_token', [
-            'refresh_token' => 'https://oauth2.googleapis.com/token'
+        $accessToken = $provider->getAccessToken('https://oauth2.googleapis.com/token', [
+            'https://oauth2.googleapis.com/token' => 'https://oauth2.googleapis.com/token'
         ]);
 
         //Server settings
