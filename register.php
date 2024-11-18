@@ -14,7 +14,13 @@ $successMessage = "";
 
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
     // Retrieve and sanitize form data
-    $1
+    // Form Data
+    $role = !empty($_POST['role']) ? $_POST['role'] : null;
+    $fullName = htmlspecialchars(trim($_POST['fullName']));
+    $grade = $_POST['grade'];
+    $route = $_POST['route'];
+    $email = filter_var($_POST['email'], FILTER_SANITIZE_EMAIL);
+    $password = $_POST['password'];
     $phoneNumber = htmlspecialchars(trim($_POST['phoneNumber']));
     $hashedPassword = password_hash($password, PASSWORD_DEFAULT);
 
@@ -68,15 +74,16 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                 $stmt->bindParam(':phone_number', $phoneNumber);
                 $stmt->execute();
 
-                // Send OTP email
-                if (sendOtpEmail($email, $otpCode)) {
-                    $_SESSION['email'] = $email;
-                    $_SESSION['successMessage'] = "Registration successful! Please enter your OTP to verify your email address.";
+                // Send OTP via WhatsApp
+                if (sendOtpWhatsApp($phoneNumber, $otpCode)) {
+                    $_SESSION['phoneNumber'] = $phoneNumber;
+                    $_SESSION['successMessage'] = "Registration successful! Please enter your OTP to verify your phone number.";
                     header("Location: verify_otp.php");
                     exit();
                 } else {
-                    $errorMessage = "Unable to send OTP. Please try again later.";
+                    $errorMessage = "Unable to send OTP via WhatsApp. Please try again later.";
                 }
+                $errorMessage = "Unable to send OTP. Please try again later.";
             }
         } catch (PDOException $e) {
             error_log($e->getMessage());
@@ -85,51 +92,43 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     }
 }
 
-function sendOtpEmail($email, $otpCode) {
-    $mail = new PHPMailer(true);
+function sendOtpWhatsApp($phoneNumber, $otpCode) {
+    $url = 'https://messages-sandbox.nexmo.com/v1/messages';
+    $apiKey = '240ae5a2';
+    $apiSecret = '5dLWgFY5NZqHSYD4';
+    $from = '14157386102';
+    
+    $data = [
+        'from' => $from,
+        'to' => "whatsapp:$phoneNumber",
+        'message_type' => 'text',
+        'text' => "Your OTP code for Strive High School is: $otpCode",
+        'channel' => 'whatsapp'
+    ];
 
-    try {
-        // OAuth2 provider
-        $provider = new Google([
-            'clientId'     => 'YOUR_GOOGLE_CLIENT_ID',
-            'clientSecret' => 'YOUR_GOOGLE_CLIENT_SECRET',
-        ]);
+    $options = [
+        CURLOPT_URL => $url,
+        CURLOPT_RETURNTRANSFER => true,
+        CURLOPT_HTTPAUTH => CURLAUTH_BASIC,
+        CURLOPT_USERPWD => "$apiKey:$apiSecret",
+        CURLOPT_HTTPHEADER => [
+            'Content-Type: application/json',
+            'Accept: application/json'
+        ],
+        CURLOPT_POST => true,
+        CURLOPT_POSTFIELDS => json_encode($data)
+    ];
 
-        // Obtain an access token
-        $accessToken = $provider->getAccessToken('refresh_token', [
-            'refresh_token' => 'YOUR_GOOGLE_REFRESH_TOKEN'
-        ]);
+    $ch = curl_init();
+    curl_setopt_array($ch, $options);
+    $response = curl_exec($ch);
+    $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+    curl_close($ch);
 
-        //Server settings
-        $mail->isSMTP();
-        $mail->Host = 'smtp.gmail.com';  // Set Gmail SMTP server
-        $mail->SMTPAuth = true;
-        $mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;
-        $mail->Port = 587;
-
-        //Set OAuth
-        $mail->AuthType = 'XOAUTH2';
-        $mail->setOAuth([
-            'provider' => $provider,
-            'clientId' => 'YOUR_GOOGLE_CLIENT_ID',
-            'clientSecret' => 'YOUR_GOOGLE_CLIENT_SECRET',
-            'refreshToken' => 'YOUR_GOOGLE_REFRESH_TOKEN',
-            'userName' => 'your-gmail-address@gmail.com'
-        ]);
-
-        //Recipients
-        $mail->setFrom('no-reply@strivehighschool.com', 'Strive High School');
-        $mail->addAddress($email);
-
-        //Content
-        $mail->isHTML(true);
-        $mail->Subject = 'Your OTP Code';
-        $mail->Body = "Dear User,<br><br>Your OTP code is: <strong>$otpCode</strong><br><br>Please enter this code to complete your registration.";
-
-        $mail->send();
+    if ($httpCode == 202) {
         return true;
-    } catch (Exception $e) {
-        error_log("Message could not be sent. Mailer Error: {$mail->ErrorInfo}");
+    } else {
+        error_log("Failed to send WhatsApp message. Response: $response");
         return false;
     }
 }
@@ -206,7 +205,13 @@ function sendOtpEmail($email, $otpCode) {
                 </div>
 
                 <!-- Route -->
-                <div class="mb-3">$1</div>
+                <label for="route" class="form-label">Preferred Route</label>
+                    <select class="form-select" id="route" name="route" required>
+                        <option value="">Select Route</option>
+                        <option value="Rooihuiskraal">Rooihuiskraal</option>
+                        <option value="Wierdapark">Wierdapark</option>
+                        <option value="Centurion">Centurion</option>
+                    </select>
 
                 <!-- Phone Number -->
                 <div class="mb-3">
