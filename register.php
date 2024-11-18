@@ -59,28 +59,33 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
                 // Insert the user into the database
                 $stmt = $pdo->prepare("
-                    INSERT INTO Users (role, email, password, route, full_name, grade, assigned_bus, otp_code, verified, phoneNumber) 
-                    VALUES (:role, :email, :password, :route, :full_name, :grade, :assigned_bus, :otp_code, 0, :phoneNumber)
-                ");
-                $stmt->bindParam(':role', $role);
-                $stmt->bindParam(':email', $email);
-                $stmt->bindParam(':password', $hashedPassword);
-                $stmt->bindParam(':route', $route);
-                $stmt->bindParam(':full_name', $fullName);
-                $stmt->bindParam(':grade', $grade);
-                $stmt->bindParam(':assigned_bus', $assignedBus, PDO::PARAM_NULL);
-                $stmt->bindParam(':otp_code', $otpCode);
-                $stmt->bindParam(':phoneNumber', $phoneNumber);
-                $stmt->execute();
+    INSERT INTO Users (role, email, password, route, full_name, grade, assigned_bus, otp_code, verified, phoneNumber) 
+    VALUES (:role, :email, :password, :route, :full_name, :grade, :assigned_bus, :otp_code, 0, :phone_number)
+");
+    $stmt->bindParam(':role', $role);
+    $stmt->bindParam(':email', $email);
+    $stmt->bindParam(':password', $hashedPassword);
+    $stmt->bindParam(':route', $route);
+    $stmt->bindParam(':full_name', $fullName);
+    $stmt->bindParam(':grade', $grade);
+    $stmt->bindParam(':assigned_bus', $assignedBus, PDO::PARAM_NULL);
+    $stmt->bindParam(':otp_code', $otpCode);
+    $stmt->bindParam(':phone_number', $phoneNumber);
+    $stmt->execute();
 
-                // Send OTP via SMS
-                if (sendOtpSms($phoneNumber, $otpCode)) {
-                    $_SESSION['successMessage'] = "Registration successful! Please enter your OTP to verify your phone number.";
-                    header("Location: verify_otp.php");
-                    exit();
-                } else {
-                    $errorMessage = "Unable to send OTP via SMS. Please try again later.";
-                }
+// Get the user_ID of the newly created user
+$userID = $pdo->lastInsertId();
+$_SESSION['userID'] = $userID;
+
+// Send OTP via SMS (or WhatsApp)
+if (sendOtpSms($phoneNumber, $otpCode)) {
+    $_SESSION['successMessage'] = "Registration successful! Please enter your OTP to verify your phone number.";
+    header("Location: verify_otp.php");
+    exit();
+} else {
+    $errorMessage = "Unable to send OTP via SMS. Please try again later.";
+}
+
             }
         } catch (PDOException $e) {
             error_log($e->getMessage());
