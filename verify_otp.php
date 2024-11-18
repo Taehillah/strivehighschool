@@ -8,34 +8,27 @@ $successMessage = "";
 
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
     // Retrieve and sanitize form data
-    $otpCode = htmlspecialchars(trim($_POST['otp']));
-    $email = $_SESSION['email'] ?? '';
+    $otpCode = htmlspecialchars(trim($_POST['otpCode']));
+    $phoneNumber = $_SESSION['phoneNumber'];
 
-    if (empty($email)) {
-        $errorMessage = "Session expired. Please register again.";
-    } elseif (empty($otpCode)) {
-        $errorMessage = "Please enter the OTP.";
-    } else {
-        try {
-            // Verify OTP
-            $stmt = $pdo->prepare("SELECT otp_code FROM Users WHERE email = :email");
-            $stmt->execute([':email' => $email]);
-            $storedOtp = $stmt->fetchColumn();
+    try {
+        // Check if the OTP code is correct
+        $stmt = $pdo->prepare("SELECT COUNT(*) FROM Users WHERE phoneNumber = :phoneNumber AND otp_code = :otp_code");
+        $stmt->execute([':phoneNumber' => $phoneNumber, ':otp_code' => $otpCode]);
+        $otpValid = $stmt->fetchColumn();
 
-            if ($storedOtp && $storedOtp === $otpCode) {
-                // Update verification status
-                $stmt = $pdo->prepare("UPDATE Users SET verified = 1 WHERE email = :email");
-                $stmt->execute([':email' => $email]);
+        if ($otpValid) {
+            // Update the user to mark them as verified
+            $stmt = $pdo->prepare("UPDATE Users SET verified = 1 WHERE phoneNumber = :phoneNumber");
+            $stmt->execute([':phoneNumber' => $phoneNumber]);
 
-                $successMessage = "OTP verified successfully! You can now log in.";
-                unset($_SESSION['email']);
-            } else {
-                $errorMessage = "Invalid OTP. Please try again.";
-            }
-        } catch (PDOException $e) {
-            error_log($e->getMessage());
-            $errorMessage = "An error occurred during OTP verification. Please try again later.";
+            $successMessage = "Your phone number has been successfully verified. You can now log in.";
+        } else {
+            $errorMessage = "Invalid OTP. Please try again.";
         }
+    } catch (PDOException $e) {
+        error_log($e->getMessage());
+        $errorMessage = "An error occurred during verification. Please try again later.";
     }
 }
 ?>
@@ -52,7 +45,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     <link rel="stylesheet" href="assets/css/style.css">
 </head>
 <body>
-    <!-- Navbar, similar to other pages -->
+    <!-- Navbar -->
     <nav class="navbar navbar-expand-lg navbar-light bg-light">
         <div class="container">
             <a class="navbar-brand" href="index.php">Strive High School</a>
@@ -63,7 +56,6 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                 <ul class="navbar-nav ms-auto">
                     <li class="nav-item"><a class="nav-link" href="index.php">Home</a></li>
                     <li class="nav-item"><a class="nav-link" href="login.php">Login</a></li>
-                    <li class="nav-item"><a class="nav-link" href="register.php">Register</a></li>
                 </ul>
             </div>
         </div>
@@ -81,16 +73,15 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                 <div class="alert alert-danger"><?php echo $errorMessage; ?></div>
             <?php endif; ?>
 
-            <?php if (!$successMessage): ?>
-                <form action="verify_otp.php" method="post">
-                    <!-- OTP Input -->
-                    <div class="mb-3">
-                        <label for="otp" class="form-label">Enter OTP</label>
-                        <input type="text" class="form-control" id="otp" name="otp" required>
-                    </div>
-                    <button type="submit" class="btn btn-primary w-100">Verify OTP</button>
-                </form>
-            <?php endif; ?>
+            <form action="" method="post">
+                <!-- OTP Code -->
+                <div class="mb-3">
+                    <label for="otpCode" class="form-label">Enter OTP Code</label>
+                    <input type="text" class="form-control" id="otpCode" name="otpCode" required>
+                </div>
+
+                <button type="submit" class="btn btn-primary w-100">Verify OTP</button>
+            </form>
         </div>
     </section>
 

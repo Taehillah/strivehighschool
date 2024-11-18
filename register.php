@@ -60,8 +60,8 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
                 // Insert the user into the database
                 $stmt = $pdo->prepare("
-                    INSERT INTO Users (role, email, password, route, full_name, grade, assigned_bus, otp_code, verified, phone_number) 
-                    VALUES (:role, :email, :password, :route, :full_name, :grade, :assigned_bus, :otp_code, 0, :phone_number)
+                    INSERT INTO Users (role, email, password, route, full_name, grade, assigned_bus, otp_code, verified, phoneNumber) 
+                    VALUES (:role, :email, :password, :route, :full_name, :grade, :assigned_bus, :otp_code, 0, :phoneNumber)
                 ");
                 $stmt->bindParam(':role', $role);
                 $stmt->bindParam(':email', $email);
@@ -71,12 +71,12 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                 $stmt->bindParam(':grade', $grade);
                 $stmt->bindParam(':assigned_bus', $assignedBus, PDO::PARAM_NULL);
                 $stmt->bindParam(':otp_code', $otpCode);
-                $stmt->bindParam(':phone_number', $phoneNumber);
+                $stmt->bindParam(':phoneNumber', $phoneNumber);
                 $stmt->execute();
 
                 // Send OTP via WhatsApp
                 if (sendOtpWhatsApp($phoneNumber, $otpCode)) {
-                    $_SESSION['phoneNumber'] = $phoneNumber;
+                    
                     $_SESSION['successMessage'] = "Registration successful! Please enter your OTP to verify your phone number.";
                     header("Location: verify_otp.php");
                     exit();
