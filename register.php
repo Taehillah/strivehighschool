@@ -162,7 +162,7 @@ function sendOtpEmail($email, $otpCode) {
                 <div class="alert alert-danger"><?php echo $errorMessage; ?></div>
             <?php endif; ?>
 
-            <form action="register_user.php" method="post">
+            <form action="" method="post">
                 <!-- Role Dropdown -->
                 <div class="mb-3">
                     <label for="role" class="form-label">Role</label>
