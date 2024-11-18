@@ -1,46 +1,10 @@
 <?php
-session_start(); // Start session to manage login state
-include 'db_connect.php';
 
-$errorMessage = "";
-$successMessage = "";
-
-if ($_SERVER["REQUEST_METHOD"] == "POST") {
-    if (!isset($_SESSION['email'])) {
-        $errorMessage = "Session expired. Please register again.";
-    } else {
-        $otpCode = filter_input(INPUT_POST, 'otp_code', FILTER_SANITIZE_STRING);
-        $email = $_SESSION['email']; // Get the email from session
-
-        try {
-            // Retrieve the OTP code from the database
-            $stmt = $pdo->prepare("SELECT otp_code FROM Users WHERE email = :email AND verified = 0");
-            $stmt->execute([':email' => $email]);
-            $user = $stmt->fetch(PDO::FETCH_ASSOC);
-
-            if ($user && $user['otp_code'] == $otpCode) {
-                // Update the user's verified status
-                $stmt = $pdo->prepare("UPDATE Users SET verified = 1, otp_code = NULL WHERE email = :email");
-                $stmt->execute([':email' => $email]);
-                $successMessage = "Your email has been verified! You can now log in.";
-                // Redirect to login page after a few seconds
-                header("refresh:5;url=login.php");
-            } else {
-                $errorMessage = "Invalid OTP code. Please try again.";
-            }
-        } catch (PDOException $e) {
-            error_log($e->getMessage());
-            $errorMessage = "An error occurred. Please try again later.";
-        }
-    }
-}
 
 // Set dynamic title
 $title = "Strive High School - Home";
 
-// Example: Set session variable for demonstration (remove in production)
-$_SESSION['loggedIn'] = $_SESSION['loggedIn'] ?? false;
-$_SESSION['role'] = $_SESSION['role'] ?? 'Guest'; // Role can be 'Admin', 'User', etc.
+
 ?>
 
 <!DOCTYPE html>
@@ -48,7 +12,7 @@ $_SESSION['role'] = $_SESSION['role'] ?? 'Guest'; // Role can be 'Admin', 'User'
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>OTP Verification</title>
+    <title>Strive High School - Home</title>
     <link rel="stylesheet" href="assets/css/style.css">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.1.3/css/bootstrap.min.css" rel="stylesheet">
     <style>
@@ -135,32 +99,19 @@ $_SESSION['role'] = $_SESSION['role'] ?? 'Guest'; // Role can be 'Admin', 'User'
         </div>
     </nav>
 
-    <!-- OTP Verification Form -->
-    <section class="main-section">
+    <!-- Welcome Section -->
+    <section class="welcome-section">
         <div class="container">
-            <h2>OTP Verification</h2>
-            <!-- Display Messages -->
-            <?php if ($successMessage): ?>
-                <div class="alert alert-success"><?php echo $successMessage; ?></div>
-            <?php elseif ($errorMessage): ?>
-                <div class="alert alert-danger"><?php echo $errorMessage; ?></div>
-            <?php endif; ?>
-            <?php if (!$successMessage): ?>
-                <form action="verify_otp.php" method="post">
-                    <div class="mb-3">
-                        <label for="otp_code" class="form-label">Enter OTP Code</label>
-                        <input type="text" class="form-control" id="otp_code" name="otp_code" required>
-                    </div>
-                    <button type="submit" class="btn btn-primary">Verify</button>
-                </form>
-            <?php endif; ?>
+            <h1>Welcome to Strive High School Bus Registration System</h1>
+            <p class="lead">Securely register for convenient and safe school transportation.</p>
+            <a href="register.php" class="btn btn-primary mt-3">Enter Here</a>
         </div>
     </section>
 
     <!-- Footer -->
     <footer class="footer">
-        <div class="container text-center">
-            <span>© <?php echo date("Y"); ?> Strive High School. All rights reserved.</span>
+        <div class="container">
+            <span>© 2024 Strive High School. All Rights Reserved.</span>
         </div>
     </footer>
 
