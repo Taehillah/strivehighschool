@@ -58,16 +58,15 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                     INSERT INTO Users (role, email, password, route, full_name, grade, assigned_bus, otp_code, verified) 
                     VALUES (:role, :email, :password, :route, :full_name, :grade, :assigned_bus, :otp_code, 0)
                 ");
-                $stmt->execute([
-                    ':role' => $role,
-                    ':email' => $email,
-                    ':password' => $hashedPassword,
-                    ':route' => $route,
-                    ':full_name' => $fullName,
-                    ':grade' => $grade,
-                    ':assigned_bus' => $assignedBus,
-                    ':otp_code' => $otpCode
-                ]);
+                $stmt->bindParam(':role', $role);
+                $stmt->bindParam(':email', $email);
+                $stmt->bindParam(':password', $hashedPassword);
+                $stmt->bindParam(':route', $route);
+                $stmt->bindParam(':full_name', $fullName);
+                $stmt->bindParam(':grade', $grade);
+                $stmt->bindParam(':assigned_bus', $assignedBus, PDO::PARAM_NULL);
+                $stmt->bindParam(':otp_code', $otpCode);
+                $stmt->execute();
 
                 // Send OTP via email using Mailgun
                 $mgClient = Mailgun::create('ed0824fd2d10b66044f20b9cecde9936-79295dd0-0f3c0ee3'); // Replace with your Mailgun Private API Key

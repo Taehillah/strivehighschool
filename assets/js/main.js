@@ -1,7 +1,5 @@
 // main.js
 
-// main.js
-
 function getUserStatus(userId) {
     fetch(`get_user_status.php?user_id=${userId}`)
         .then(response => response.json())
@@ -55,19 +53,18 @@ document.addEventListener("DOMContentLoaded", updateNavbar);
 document.addEventListener("DOMContentLoaded", updateNavbar);
 
 // Ensure toggleFields() and other functions only affect elements by ID
-function toggleFields() {
-    const role = document.getElementById('role').value;
+function toggleFieldsBasedOnRole(role) {
     const isAdmin = role === 'Admin';
 
     // Only disable specified fields, ensuring no impact on CSS
-    const fieldsToToggle = [ 'grade', 'route'];
+    const fieldsToToggle = ['grade', 'route'];
     fieldsToToggle.forEach(id => {
         document.getElementById(id).disabled = isAdmin;
     });
 }
 
- // Toggle mobile menu visibility
- function toggleMenu() {
+// Toggle mobile menu visibility
+function toggleMenu() {
     const menu = document.getElementById('navbarMenu');
     menu.classList.toggle('active');
 }
