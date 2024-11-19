@@ -129,6 +129,21 @@ function sendOtpSms($phoneNumber, $otpCode) {
     <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet">
     <!-- Your custom styles -->
     <link rel="stylesheet" href="assets/css/style.css">
+    <script>
+function toggleFields() {
+    const roleSelect = document.getElementById('role');
+    const gradeField = document.getElementById('grade');
+    const routeField = document.getElementById('route');
+    
+    if (roleSelect.value === 'Admin') {
+        gradeField.disabled = true;
+        routeField.disabled = true;
+    } else {
+        gradeField.disabled = false;
+        routeField.disabled = false;
+    }
+}
+</script>
 </head>
 <body>
     <!-- Navbar, similar to other pages -->
