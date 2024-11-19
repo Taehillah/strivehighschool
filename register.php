@@ -100,9 +100,9 @@ function sendOtpWhatsApp($phoneNumber, $otpCode) {
     
     $data = [
         'from' => $from,
-        'to' => "whatsapp:$phoneNumber",
+        'to' => "whatsapp:\$phoneNumber",
         'message_type' => 'text',
-        'text' => "Your OTP code for Strive High School is: $otpCode",
+        'text' => "Your OTP code for Strive High School is: \$otpCode",
         'channel' => 'whatsapp'
     ];
 
@@ -110,7 +110,7 @@ function sendOtpWhatsApp($phoneNumber, $otpCode) {
         CURLOPT_URL => $url,
         CURLOPT_RETURNTRANSFER => true,
         CURLOPT_HTTPAUTH => CURLAUTH_BASIC,
-        CURLOPT_USERPWD => "$apiKey:$apiSecret",
+        CURLOPT_USERPWD => "\$apiKey:\$apiSecret",
         CURLOPT_HTTPHEADER => [
             'Content-Type: application/json',
             'Accept: application/json'
@@ -128,7 +128,7 @@ function sendOtpWhatsApp($phoneNumber, $otpCode) {
     if ($httpCode == 202) {
         return true;
     } else {
-        error_log("Failed to send WhatsApp message. Response: $response");
+        error_log("Failed to send WhatsApp message. Response: \$response");
         return false;
     }
 }
@@ -142,11 +142,31 @@ function sendOtpWhatsApp($phoneNumber, $otpCode) {
     <!-- Your existing head content -->
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title><?php echo $title; ?></title>
+    <title><?php echo htmlspecialchars($title, ENT_QUOTES, 'UTF-8'); ?></title>
     <!-- Include Bootstrap CSS -->
     <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet">
     <!-- Your custom styles -->
     <link rel="stylesheet" href="assets/css/style.css">
+    <style>
+        body {
+            background: linear-gradient(135deg, #6a11cb, #2575fc);
+            color: #fff;
+        }
+        .container {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 30px;
+            border-radius: 10px;
+            max-width: 600px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+        }
+        .form-control {
+            border-radius: 30px;
+            padding: 15px;
+        }
+        button {
+            border-radius: 30px;
+        }
+    </style>
 <script>
 function toggleFields() {
     const roleSelect = document.getElementById('role');
@@ -220,13 +240,15 @@ function toggleFields() {
                 </div>
 
                 <!-- Route -->
-                <label for="route" class="form-label">Preferred Route</label>
+                <div class="mb-3">
+                    <label for="route" class="form-label">Preferred Route</label>
                     <select class="form-select" id="route" name="route" required>
                         <option value="">Select Route</option>
                         <option value="Rooihuiskraal">Rooihuiskraal</option>
                         <option value="Wierdapark">Wierdapark</option>
                         <option value="Centurion">Centurion</option>
                     </select>
+                </div>
 
                 <!-- Phone Number -->
                 <div class="mb-3">
